@@ -46,3 +46,6 @@ warn_unused_ignores = true
 asyncio_mode = "auto"
 testpaths = ["tests"]
 addopts = "--basetemp=.pytest-tmp"
+markers = [
+    "integration: cross-repository or live-process integration tests",
+]
