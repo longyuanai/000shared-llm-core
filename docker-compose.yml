@@ -1,0 +1,31 @@
+services:
+  vllm:
+    image: vllm/vllm-openai:latest
+    container_name: longyuanai_vllm
+    runtime: nvidia
+    environment:
+      - HUGGING_FACE_HUB_TOKEN=${HUGGING_FACE_HUB_TOKEN:-}
+    command:
+      - --model=Qwen/Qwen2.5-7B-Instruct
+      - --host=0.0.0.0
+      - --port=8000
+      - --served-model-name=Qwen/Qwen2.5-7B-Instruct
+      - --dtype=bfloat16
+      - --max-model-len=8192
+    ports:
+      - "8000:8000"
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/v1/models"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s

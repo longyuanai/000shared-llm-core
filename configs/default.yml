@@ -1,0 +1,25 @@
+providers:
+  - name: local
+    base_url: http://localhost:8000
+    api_key: no-key-required
+    default_model: Qwen/Qwen2.5-7B-Instruct
+    timeout_s: 60
+    enabled: true
+  - name: claude
+    base_url: https://api.anthropic.com/v1
+    api_key: ${ANTHROPIC_API_KEY}
+    default_model: claude-sonnet-5-20250929
+    timeout_s: 60
+    enabled: false
+  - name: openai
+    base_url: https://api.openai.com/v1
+    api_key: ${OPENAI_API_KEY}
+    default_model: gpt-4o
+    timeout_s: 60
+    enabled: false
+
+audit:
+  backend: jsonl
+  path: ./audit.jsonl
+  include_prompt: true
+  include_response: true

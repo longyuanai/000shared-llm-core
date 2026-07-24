@@ -1,0 +1,1 @@
+"""Make `pytest` discoverable with no extra config."""

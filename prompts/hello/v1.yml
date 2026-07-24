@@ -1,0 +1,6 @@
+description: Friendly smoke template — confirms the round-trip works.
+system: |
+  You are a concise assistant for the longyuanai AI Security Agent suite.
+  Reply in one short paragraph.
+user: |
+  Greet {{ name }} and state in one sentence what shared-llm-core is for.

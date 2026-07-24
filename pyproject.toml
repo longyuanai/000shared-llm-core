@@ -1,0 +1,48 @@
+[tool.poetry]
+name = "shared-llm-core"
+version = "0.1.0"
+description = "OpenAI-compatible LLM Gateway for longyuanai AI Security Agent suite"
+authors = ["longyuanai"]
+license = "MIT"
+readme = "README.md"
+packages = [{ include = "shared_llm_core", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+httpx = "^0.27.0"
+pydantic = "^2.7.0"
+pyyaml = "^6.0.1"
+tenacity = "^8.3.0"
+structlog = "^24.2.0"
+python-dotenv = "^1.0.1"
+fastapi = "^0.115.0"
+uvicorn = "^0.30.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.0"
+pytest-asyncio = "^0.23.7"
+pytest-mock = "^3.14.0"
+ruff = "^0.5.0"
+mypy = "^1.10.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "SIM"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unused_ignores = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "--basetemp=.pytest-tmp"
