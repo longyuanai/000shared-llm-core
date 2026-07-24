@@ -1,167 +1,198 @@
-# Codex 派活指令 · 005-FINAL · v1.0 e2e 集成 + Demo + 商业化文档
+# Codex 派活指令 · 005-FINAL · v0.5 形式冻结收尾
 
 > **派活方**: Claude
 > **接收方**: Codex
-> **前提**: 005-INTEG ✅ done、005-UI ⏳ must done first、6 产品 v0.6(S4/S5)✅ done
-> **优先级**: 🔴 Week 13(收尾,所有派活的终点)
+> **前提**: §7-§10 实现完成、§15 CLI Envelope 已接入 001~006、6 worker 四件套可运行
+> **优先级**: 🔴 v0.5 收口
 
 ---
 
-## ⚠️ 开工前必读(8 个文件)
+## 1. 目标
 
-1. `E:\001项目\000开发\003AI+网络安全\000shared-integration\README.md`
-2. `E:\001项目\000开发\003AI+网络安全\000shared-integration\docker-compose.yml`(待建)
-3. `E:\001项目\000开发\003AI+网络安全\web-ui\README.md`(005-UI 完工后)
-4. `E:\001项目\000开发\003AI+网络安全\000shared-llm-core\docs\v0.5-contract.md` 全 §
-5. `E:\001项目\000开发\003AI+网络安全\README.md`(项目根)
-6. `E:\001项目\000开发\003AI+网络安全\STAGES.md`
-7. `E:\001项目\000开发\003AI+网络安全\AUDIT\EXPERIENCE.md`
-8. `E:\001项目\000开发\003AI+网络安全\demo-report.md`(已有)
+把 `000shared-llm-core` 与 001~006 六个产品从“手工验证通过”推进到可审计的
+v0.5 形式冻结：
 
-## ⚠️ Windows 踩坑经验
+- §15 契约具备六产品真实 subprocess 测试；
+- `inspect_worker_return.py` 四件套结果固化为证据；
+- RFC-001 明确冻结范围与兼容规则；
+- 发布最终测试数字、状态索引与剩余风险。
 
-`AUDIT\EXPERIENCE.md` —— **4 个经验全适用**
+工作仓库：
+
+```text
+E:\001项目\000开发\003AI+网络安全\000shared-llm-core
+```
+
+001~006 产品仓只读参与验证，不提交产品改动。
 
 ---
 
-## 工作目录
+## 2. 任务（4 ISSUE / 4 commit）
 
+### ISSUE 1 · 005-FINAL-001 · 六产品 §15 CLI envelope smoke
+
+新增：
+
+```text
+tests/integration/test_cli_envelope_smoke.py
 ```
-新建仓库:E:\001项目\000开发\003AI+网络安全\longyuanai-deploy
+
+要求：
+
+- 001~006 各一个真实 subprocess case；
+- 使用 `sys.executable -m <module> scan --input <json> --json`；
+- `cwd` 指向产品根目录；
+- `PYTHONPATH` 只注入产品 `src/`、core `src/` 与 004 `.python-deps/`；
+- 校验退出码、UTF-8 JSON、`findings` list 与 Finding 基础字段；
+- sibling 产品仓缺失时允许 skip，存在时必须真实运行。
+
+Commit：
+
+```text
+test(final): add six-product CLI envelope smoke
 ```
 
-或直接放在 `000shared-integration/` 下新增 `deploy/` 子目录(与 INTEG worker 协商,推荐独立仓库)。
+### ISSUE 2 · 005-FINAL-002 · 固化 6-worker 四件套证据
 
-## 本 Stage 目标(3 个 ISSUE / 3 个 commit)
+运行：
 
-### ISSUE 1 · docker-compose 全栈编排(DEPLOY-001)
-
-**目标**: 一个 `docker-compose up` 起来 7 个服务(000 不用,6 产品 + 集成 + web-ui)。
-
-**任务**:
-1. `longyuanai-deploy/docker-compose.yml`:
-```yaml
-version: "3.9"
-services:
-  shared-integration:
-    build: ../000shared-integration
-    ports: ["8080:8080"]
-    environment:
-      - SUITE_ROOT=/suite
-  web-ui:
-    build: ../web-ui
-    ports: ["3000:3000"]
-    environment:
-      - NEXT_PUBLIC_GATEWAY_URL=http://shared-integration:8080
-    depends_on: [shared-integration]
-  001-soc, 002-vuln, 003-lab, 004-code, 005-reverse, 006-firmware: (各自 build + 共享 volume)
+```powershell
+& 'C:\Users\15072\AppData\Local\Programs\Python\Python314\python.exe' `
+  'E:\001项目\000开发\003AI+网络安全\scripts\inspect_worker_return.py'
 ```
-2. 每个产品目录加 `Dockerfile`(若还没有 — 001/002/003 已 done,004/005/006 已 done;若 INTEG 派活时未加,本 ISSUE 补)
-3. `longyuanai-deploy/scripts/up.sh` + `down.sh`(Windows 用 .ps1 也行)
-4. `.env.example`:所有 `*_API_KEY` 占位
 
-**测试**(≥ 3 个):
-- `test_compose_up.py::test_docker_compose_config_valid`(用 `docker compose config` 验证)
-- `test_compose_up.py::test_all_7_services_listed`
-- `test_compose_up.py::test_health_endpoint_accessible_after_up`(集成测试,标记 @pytest.mark.integration)
+新增：
 
-**验收**:
-- `docker compose config` 无错
-- `docker compose up -d` 成功,`docker compose ps` 7 个服务都 running
-- `curl http://localhost:8080/v0.5/health` 返回 6 个 product ok
-- 1 commit
+```text
+docs/validation/005-final-worker-return.md
+```
 
-### ISSUE 2 · e2e 真实场景剧本(E2E-001)
+记录每个 worker 的：
 
-**目标**: 一个端到端剧本跑通 —— 从"扫描"到"告警"到"Dashboard 显示"。
+1. recent commits；
+2. `HEAD~2` diffstat；
+3. isolated-basetemp pytest；
+4. real CLI JSON envelope。
 
-**任务**:
-1. `longyuanai-deploy/scenarios/01_brute_force_to_dashboard/`:
-   - `run.py`:触发 `POST /v0.5/soc/scan` 注入 sshd 暴力破解事件
-   - 触发 `POST /v0.5/vuln/scan` 注入对应 CVE
-   - 触发 `POST /v0.5/code/scan` 扫描一段有 SQLi 的代码
-   - 等待 SameHostMultiSourceRule 关联出告警
-   - 验证 `GET /v0.5/correlations` 返回 1 条
-   - 截图 `dashboard.png`(用 playwright headless 访问 `http://localhost:3000`)
-2. `scenarios/02_firmware_cve_chain/`:
-   - 上传一个含已知 CVE 的小固件 → `/v0.5/firmware/scan`
-   - 触发关联
-   - 验证 + 截图
-3. `scenarios/03_prompt_injection_lab/`:
-   - 跑一个 Lab 攻击 → 关联到 SOC 上(模拟)
+Commit：
 
-**测试**(≥ 3 个):
-- `test_scenarios.py::test_brute_force_e2e`(或直接 `python scenarios/01.../run.py`)
-- 3 个 scenario 跑通各 1 次,产出 3 张截图
-- 全部进 `tests/e2e/test_scenarios.py` 用 pytest 框架
+```text
+docs(final): record six-worker four-part validation
+```
 
-**验收**:
-- 3 个 scenario 跑通
-- 3 张截图存在 `docs/screenshots/`
-- 1 commit
+### ISSUE 3 · 005-FINAL-003 · RFC-001 v0.5 freeze
 
-### ISSUE 3 · 商业化文档 + Demo 视频脚本(DOC-001)
+新增：
 
-**目标**: 让用户 5 分钟看懂 longyuanai 是什么、解决什么问题、怎么用。
+```text
+docs/rfcs/RFC-001-v0.5-freeze.md
+```
 
-**任务**:
-1. `longyuanai-deploy/README.md`:项目总览(架构图 ASCII + 一句话定位)
-2. `longyuanai-deploy/docs/QUICKSTART.md`:5 分钟上手(docker compose up → 截图)
-3. `longyuanai-deploy/docs/USE-CASES.md`:3 个 use case(中英文):
-   - SOC 团队:实时攻击检测 + 跨产品关联
-   - 渗透测试:扫描 + 利用链分析
-   - 代码审计:CI 集成 + 自动修复建议
-4. `longyuanai-deploy/docs/DEMO-SCRIPT.md`:3 分钟 Demo 视频脚本(分镜 + 旁白 + 截图列表)
-5. `longyuanai-deploy/docs/BUSINESS.md`:商业模式 + 目标客户 + 定价(草稿)
-6. `longyuanai-deploy/docs/FAQ.md`:10 个常见问题
+RFC 至少包含：
 
-**验收**:
-- 6 个文档齐全,中英双语
-- ASCII 架构图(可用 mermaid 或 dot)
-- 链接到 3 张 screenshot
-- 1 commit
+- 冻结范围（§1-§10 + §15 addendum）；
+- v0.5.x 允许和禁止的变更；
+- CLI envelope 兼容承诺；
+- 验证证据；
+- 已知限制与 rollback；
+- v1.0 exit criteria。
+
+Commit：
+
+```text
+docs(final): accept RFC-001 v0.5 freeze
+```
+
+### ISSUE 4 · 005-FINAL-004 · 最终报告与状态索引
+
+新增或更新：
+
+```text
+docs/releases/v0.5-final.md
+docs/dispatches/INDEX.md
+README.md
+docs/dispatches/005-FINAL.md
+```
+
+要求：
+
+- 发布 000 + 001~006 的最终测试数字；
+- 链接 contract、RFC、validation evidence；
+- 明确 005-UI 与 007-CI 是独立后续派活；
+- 不把“手工四件套全绿”误写成“自动 CI 已完成”。
+
+Commit：
+
+```text
+docs(final): publish v0.5 final validation report
+```
 
 ---
 
-## 约束
+## 3. 测试
 
-- 不修改任何产品目录(000~006)+ 000shared-integration + web-ui(只读依赖)
-- 所有命令 Windows 兼容(.ps1 脚本优先,或同时给 .sh + .ps1)
-- pytest 三件套
-- 不装新依赖(docker compose 是宿主命令,不进 Python venv)
-- **不要**碰 GitHub Actions(各产品已有)
+Windows 必须使用绝对解释器：
+
+```text
+C:\Users\15072\AppData\Local\Programs\Python\Python314\python.exe
+```
+
+所有 pytest 必须使用非中文 basetemp 并清空项目 `addopts`：
+
+```powershell
+& 'C:\Users\15072\AppData\Local\Programs\Python\Python314\python.exe' `
+  -m pytest tests/ `
+  --basetemp=C:/pytest-tmp/005-final-core `
+  -q --tb=short -o addopts=
+```
+
+六产品四件套：
+
+```powershell
+& 'C:\Users\15072\AppData\Local\Programs\Python\Python314\python.exe' `
+  'E:\001项目\000开发\003AI+网络安全\scripts\inspect_worker_return.py'
+```
+
+最低要求：
+
+- core 全量 0 failed；
+- 六产品 CLI smoke 6 passed；
+- inspect `OVERALL PASS 6/6 workers green`；
+- `git diff --check` 无错误。
 
 ---
 
-## 回报
+## 4. 验收
 
-```
-1. 3 个 commit hash
-2. docker compose config 输出(无错)
-3. 3 个 scenario run.py 输出片段
-4. 3 张截图路径
-5. 6 个文档路径
-6. 进入 v1.0 商业化的建议
-```
-
-## 最终验证清单(交付前)
-
-- [ ] `docker compose up -d` → 7 服务全 running
-- [ ] `curl localhost:8080/v0.5/health` → 6 ok
-- [ ] `curl localhost:3000` → Dashboard 可访问
-- [ ] 3 scenarios 跑通
-- [ ] 6 文档齐全
-- [ ] 没有 pytest 测试失败
+- [x] 4 ISSUE 对应 4 commit；
+- [x] `tests/integration/test_cli_envelope_smoke.py` 六产品真子进程全绿；
+- [x] `docs/validation/005-final-worker-return.md` 包含四件套明细；
+- [x] RFC-001 状态为 Accepted；
+- [x] final report 给出 7 仓测试合计与剩余风险；
+- [x] `inspect_worker_return.py` 显示 6/6 PASS；
+- [x] 产品仓没有新增 005-FINAL 修改；
+- [x] 无 API Key、Token、密码、私钥或客户数据。
 
 ---
 
-## 预计工时
+## 5. 约束
 
-**5-7 天**(docker 学习曲线 + 3 scenario + 6 文档)
+- 不修改 v0.1 §1-§6 runtime API；
+- 不修改 001~006 产品代码；
+- 不把产品仓现有 dirty worktree 纳入提交；
+- 不新增生产依赖；
+- 不修改 GitHub Actions（由 007-CI 负责）；
+- 不实施 Web Dashboard（由 005-UI 负责）；
+- 所有网络安全测试仅使用本地仓、样例与授权数据；
+- 未实际验证的结果不得写成 PASS。
 
-## 商业化 checklist(本 Stage 完成后)
+---
 
-- [ ] Docker 镜像推到 Docker Hub(`longyuanai/*` namespace)
-- [ ] 项目录个 3 分钟 Demo 视频(可选,worker 自己录或老板录)
-- [ ] 写 GitHub README(英文版商业化包装)
-- [ ] 商业化路演 PPT 草稿(老板来写,worker 提供素材)
+## 6. 回报（四件套）
+
+```text
+1. git log --oneline -4
+2. git diff HEAD~4 --stat
+3. core pytest 最后输出 + 7 仓测试合计
+4. inspect_worker_return.py 输出（6/6 PASS）+ 已知问题
+```

@@ -8,7 +8,7 @@
 
 ---
 
-## 派活文件清单(13 个)
+## 派活文件清单(16 个)
 
 | # | 文件 | 项目 | 工时 | 派发周 | 状态 |
 |---|------|------|------|--------|------|
@@ -21,13 +21,13 @@
 | 7 | [dispatches/006-S4.md](dispatches/006-S4.md) | 006 AI-Firmware-Security-Agent | 4-5 天 | Week 10.2 | ✅ done |
 | 8 | [dispatches/005-INTEG.md](dispatches/005-INTEG.md) | shared-integration(新) | 4-5 天 | Week 11 | ✅ done(4 commit) |
 | 9 | [dispatches/005-UI.md](dispatches/005-UI.md) | web-ui(新) | 4-5 天 | Week 12 | ⏳ pending |
-| 10 | [dispatches/001-S4.md](dispatches/001-S4.md) | 001 v0.6 IntegrationGateway adapter | 2-3 天 | Week 11 | 🚀 dispatching (2026-07-25) |
-| 11 | [dispatches/002-S4.md](dispatches/002-S4.md) | 002 v0.6 adapter | 2-3 天 | Week 11 | 🚀 dispatching (2026-07-25) |
-| 12 | [dispatches/003-S4.md](dispatches/003-S4.md) | 003 v0.6 adapter | 2-3 天 | Week 11 | 🚀 dispatching (2026-07-25) |
-| 13 | [dispatches/004-S4.md](dispatches/004-S4.md) | 004 v0.6 adapter | 2-3 天 | Week 11 | 🚀 dispatching (2026-07-25) |
-| 14 | [dispatches/005-S4.md](dispatches/005-S4.md) | 005 v0.6 adapter | 2-3 天 | Week 11 | 🚀 dispatching (2026-07-25) |
-| 15 | [dispatches/006-S5.md](dispatches/006-S5.md) | 006 v0.6 adapter | 2-3 天 | Week 11 | 🚀 dispatching (2026-07-25) |
-| 16 | [dispatches/005-FINAL.md](dispatches/005-FINAL.md) | longyuanai-deploy e2e + Demo + 文档 | 5-7 天 | Week 13 | ⏳ pending(待 INTEG + UI 完工) |
+| 10 | [dispatches/001-S4.md](dispatches/001-S4.md) | 001 v0.6 IntegrationGateway adapter | 2-3 天 | Week 11 | ✅ done |
+| 11 | [dispatches/002-S4.md](dispatches/002-S4.md) | 002 v0.6 adapter | 2-3 天 | Week 11 | ✅ done |
+| 12 | [dispatches/003-S4.md](dispatches/003-S4.md) | 003 v0.6 adapter | 2-3 天 | Week 11 | ✅ done |
+| 13 | [dispatches/004-S4.md](dispatches/004-S4.md) | 004 v0.6 adapter | 2-3 天 | Week 11 | ✅ done |
+| 14 | [dispatches/005-S4.md](dispatches/005-S4.md) | 005 v0.6 adapter | 2-3 天 | Week 11 | ✅ done |
+| 15 | [dispatches/006-S5.md](dispatches/006-S5.md) | 006 v0.6 adapter | 2-3 天 | Week 11 | ✅ done |
+| 16 | [dispatches/005-FINAL.md](dispatches/005-FINAL.md) | v0.5 freeze + §15 cross-repo validation | 1 天 | Week 13 | ✅ done(4 commits) |
 
 ---
 
@@ -86,9 +86,9 @@
 复制 `dispatches/005-UI.md` → Codex(单 worker,**新建 `web-ui/` 仓库**)。
 **等 4-5 天**。
 
-### Step 6 · Week 13
+### Step 6 · Week 13(已完成)✅
 
-派 `005-FINAL`(集成测试 + Demo + 商业化文档)—— 待 `005-FINAL.md` 起草。
+执行 `005-FINAL`:六产品真 CLI smoke、四件套证据、RFC-001 与最终冻结报告。
 
 ---
 
@@ -109,13 +109,13 @@ E:\001项目\000开发\003AI+网络安全\000shared-llm-core\docs\
     ├── 006-S4.md                     (Week 10.2) ✅ done
     ├── 005-INTEG.md                  (Week 11) ✅ done
     ├── 005-UI.md                     (Week 12) ⏳ pending
-    ├── 001-S4.md                     (Week 11) ⏳ pending — v0.6 adapter
-    ├── 002-S4.md                     (Week 11) ⏳ pending — v0.6 adapter
-    ├── 003-S4.md                     (Week 11) ⏳ pending — v0.6 adapter
-    ├── 004-S4.md                     (Week 11) ⏳ pending — v0.6 adapter
-    ├── 005-S4.md                     (Week 11) ⏳ pending — v0.6 adapter
-    ├── 006-S5.md                     (Week 11) ⏳ pending — v0.6 adapter
-    └── 005-FINAL.md                  (Week 13) ⏳ pending — e2e + Demo + 商业化
+    ├── 001-S4.md                     (Week 11) ✅ done — v0.6 adapter
+    ├── 002-S4.md                     (Week 11) ✅ done — v0.6 adapter
+    ├── 003-S4.md                     (Week 11) ✅ done — v0.6 adapter
+    ├── 004-S4.md                     (Week 11) ✅ done — v0.6 adapter
+    ├── 005-S4.md                     (Week 11) ✅ done — v0.6 adapter
+    ├── 006-S5.md                     (Week 11) ✅ done — v0.6 adapter
+    └── 005-FINAL.md                  (Week 13) ✅ done — v0.5 freeze
 ```
 
 ---
@@ -127,9 +127,9 @@ E:\001项目\000开发\003AI+网络安全\000shared-llm-core\docs\
 | Week 9 | 1 (005-CONTRACT) | v0.5 §7-§10 就位 | ✅ done |
 | Week 10.1 | 3 (001/002/003 并行) | 3 个产品 v0.5 升级 | ✅ done |
 | Week 10.2 | 3 (004/005/006 并行) | 3 个产品 v0.5 升级 | ✅ done |
-| Week 11 | 1 (005-INTEG) | 集成层 + FastAPI | ⏳ pending |
+| Week 11 | 1 (005-INTEG) | 集成层 + FastAPI | ✅ done |
 | Week 12 | 1 (005-UI) | Web dashboard | ⏳ pending |
-| Week 13 | 1 (005-FINAL) | e2e + Demo + 文档 | ⏳ pending(待起草) |
+| Week 13 | 1 (005-FINAL) | §15 e2e + RFC + freeze report | ✅ done |
 
 **已完成工时**:约 3 周(Week 9-11.2)
 **剩余工时**:约 3 周(Week 11.3 - Week 13)

@@ -5,6 +5,11 @@
 > **AI-Firmware-Security-Agent**, **AI-Agent-Security-Lab**, and the upgraded
 > **AI-CodeGuard**.
 
+> **v0.5 frozen — 2026-07-25.** See the
+> [frozen contract](docs/v0.5-contract.md),
+> [RFC-001](docs/rfcs/RFC-001-v0.5-freeze.md), and
+> [final validation report](docs/releases/v0.5-final.md).
+
 ## Why this exists
 
 Six agents, six stacks, one LLM call interface. Without a shared gateway we
