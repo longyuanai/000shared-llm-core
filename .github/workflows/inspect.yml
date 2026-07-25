@@ -55,6 +55,88 @@ jobs:
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           }
 
+      - name: Run pytest (001 AI SOC Agent)
+        shell: pwsh
+        working-directory: 001AI-SOC-Agent
+        env:
+          PYTHONPATH: ${{ github.workspace }}/001AI-SOC-Agent/src
+        run: |
+          $py = (Get-Command python).Source
+          & $py -m pytest tests/ `
+            --basetemp=C:/pytest-tmp/001/ `
+            -o addopts= `
+            -q --tb=no
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Run pytest (002 AI Vulnerability Agent)
+        shell: pwsh
+        working-directory: 002AI-Vulnerability-Agent
+        env:
+          PYTHONPATH: ${{ github.workspace }}/002AI-Vulnerability-Agent/src
+        run: |
+          $py = (Get-Command python).Source
+          & $py -m pytest tests/ `
+            --basetemp=C:/pytest-tmp/002/ `
+            -o addopts= `
+            -q --tb=no
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Run pytest (003 AI Agent Security Lab)
+        shell: pwsh
+        working-directory: 003AI Agent安全靶场
+        env:
+          PYTHONPATH: ${{ github.workspace }}/003AI Agent安全靶场/src
+        run: |
+          $py = (Get-Command python).Source
+          & $py -m pytest tests/ `
+            --basetemp=C:/pytest-tmp/003/ `
+            -o addopts= `
+            -q --tb=no
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Run pytest (004 AI CodeGuard)
+        shell: pwsh
+        working-directory: 004AI代码审计/004AI-CodeGuard-upgrade
+        env:
+          PYTHONPATH: ${{ github.workspace }}/004AI代码审计/004AI-CodeGuard-upgrade/src;${{ github.workspace }}/004AI代码审计/004AI-CodeGuard-upgrade/.python-deps
+        run: |
+          $py = (Get-Command python).Source
+          & $py -m pytest tests/ `
+            --basetemp=C:/pytest-tmp/004/ `
+            -o addopts= `
+            -q --tb=no
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Run pytest (005 AI Reverse Agent)
+        shell: pwsh
+        working-directory: 005AI逆向Agent
+        env:
+          PYTHONPATH: ${{ github.workspace }}/005AI逆向Agent/src
+        run: |
+          $py = (Get-Command python).Source
+          & $py -m pytest tests/ `
+            --basetemp=C:/pytest-tmp/005/ `
+            -o addopts= `
+            -q --tb=no
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Run pytest (006 AI Firmware Security Agent)
+        shell: pwsh
+        working-directory: 006AI-Firmware-Security-Agent
+        env:
+          PYTHONPATH: ${{ github.workspace }}/006AI-Firmware-Security-Agent/src
+        run: |
+          $py = (Get-Command python).Source
+          & $py -m pytest tests/ `
+            --basetemp=C:/pytest-tmp/006/ `
+            -o addopts= `
+            -q --tb=no
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Show pytest basetemp
+        shell: pwsh
+        run: Get-ChildItem -LiteralPath C:/pytest-tmp/ -Force
+
       - name: Run inspect (6 workers)
         shell: pwsh
         run: |
