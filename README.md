@@ -1,5 +1,7 @@
 # shared-llm-core
 
+[![inspect](https://github.com/longyuanai/longyuanai/actions/workflows/inspect.yml/badge.svg?branch=main)](https://github.com/longyuanai/longyuanai/actions/workflows/inspect.yml)
+
 > OpenAI-compatible LLM Gateway for the longyuanai AI Security Agent suite.
 > Powers **AI-SOC-Agent**, **AI-Vulnerability-Agent**, **AI-Reverse-Agent**,
 > **AI-Firmware-Security-Agent**, **AI-Agent-Security-Lab**, and the upgraded

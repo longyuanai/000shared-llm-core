@@ -75,5 +75,15 @@ jobs:
           module.PY = sys.executable
           raise SystemExit(module.main())
           '@
-          & $py -c $adapter
-          exit $LASTEXITCODE
+          $resultFile = Join-Path $env:RUNNER_TEMP "inspect-worker-return.txt"
+          & $py -c $adapter 2>&1 | Tee-Object -FilePath $resultFile
+          $inspectExit = $LASTEXITCODE
+
+          Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value "## Six-worker inspection"
+          Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value '```text'
+          Get-Content -LiteralPath $resultFile |
+            Select-Object -Last 12 |
+            Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+          Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value '```'
+
+          exit $inspectExit
