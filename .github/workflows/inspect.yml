@@ -1,3 +1,9 @@
+# Layout contract: although this workflow is stored in 000shared-llm-core, it
+# expects a mono checkout rooted at GITHUB_WORKSPACE with 000shared-llm-core,
+# all six worker directories, and scripts/inspect_worker_return.py as siblings.
+# The current local repositories have no remotes, so a standalone core checkout
+# cannot satisfy this layout until the suite is published or multi-checkout is
+# configured.
 name: inspect-worker-return
 
 on:
@@ -21,6 +27,16 @@ jobs:
   inspect:
     runs-on: windows-latest
     timeout-minutes: 30
+    env:
+      SUITE_ROOT: ${{ github.workspace }}
+      CORE_DIR: ${{ github.workspace }}/000shared-llm-core
+      WORKER_001_DIR: ${{ github.workspace }}/001AI-SOC-Agent
+      WORKER_002_DIR: ${{ github.workspace }}/002AI-Vulnerability-Agent
+      WORKER_003_DIR: ${{ github.workspace }}/003AI Agent安全靶场
+      WORKER_004_DIR: ${{ github.workspace }}/004AI代码审计/004AI-CodeGuard-upgrade
+      WORKER_005_DIR: ${{ github.workspace }}/005AI逆向Agent
+      WORKER_006_DIR: ${{ github.workspace }}/006AI-Firmware-Security-Agent
+      INSPECT_SCRIPT: ${{ github.workspace }}/scripts/inspect_worker_return.py
 
     steps:
       - name: Check out suite
@@ -42,13 +58,13 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
           $projects = @(
-            "000shared-llm-core",
-            "001AI-SOC-Agent",
-            "002AI-Vulnerability-Agent",
-            "003AI Agent安全靶场",
-            "004AI代码审计/004AI-CodeGuard-upgrade",
-            "005AI逆向Agent",
-            "006AI-Firmware-Security-Agent"
+            $env:CORE_DIR,
+            $env:WORKER_001_DIR,
+            $env:WORKER_002_DIR,
+            $env:WORKER_003_DIR,
+            $env:WORKER_004_DIR,
+            $env:WORKER_005_DIR,
+            $env:WORKER_006_DIR
           )
           foreach ($project in $projects) {
             & $py -m pip install --disable-pip-version-check -e $project
@@ -57,12 +73,11 @@ jobs:
 
       - name: Run pytest (001 AI SOC Agent)
         shell: pwsh
-        working-directory: 001AI-SOC-Agent
         env:
-          PYTHONPATH: ${{ github.workspace }}/001AI-SOC-Agent/src
+          PYTHONPATH: ${{ env.WORKER_001_DIR }}/src
         run: |
           $py = (Get-Command python).Source
-          & $py -m pytest tests/ `
+          & $py -m pytest "$env:WORKER_001_DIR/tests/" `
             --basetemp=C:/pytest-tmp/001/ `
             -o addopts= `
             -q --tb=no
@@ -70,12 +85,11 @@ jobs:
 
       - name: Run pytest (002 AI Vulnerability Agent)
         shell: pwsh
-        working-directory: 002AI-Vulnerability-Agent
         env:
-          PYTHONPATH: ${{ github.workspace }}/002AI-Vulnerability-Agent/src
+          PYTHONPATH: ${{ env.WORKER_002_DIR }}/src
         run: |
           $py = (Get-Command python).Source
-          & $py -m pytest tests/ `
+          & $py -m pytest "$env:WORKER_002_DIR/tests/" `
             --basetemp=C:/pytest-tmp/002/ `
             -o addopts= `
             -q --tb=no
@@ -83,12 +97,11 @@ jobs:
 
       - name: Run pytest (003 AI Agent Security Lab)
         shell: pwsh
-        working-directory: 003AI Agent安全靶场
         env:
-          PYTHONPATH: ${{ github.workspace }}/003AI Agent安全靶场/src
+          PYTHONPATH: ${{ env.WORKER_003_DIR }}/src
         run: |
           $py = (Get-Command python).Source
-          & $py -m pytest tests/ `
+          & $py -m pytest "$env:WORKER_003_DIR/tests/" `
             --basetemp=C:/pytest-tmp/003/ `
             -o addopts= `
             -q --tb=no
@@ -96,12 +109,11 @@ jobs:
 
       - name: Run pytest (004 AI CodeGuard)
         shell: pwsh
-        working-directory: 004AI代码审计/004AI-CodeGuard-upgrade
         env:
-          PYTHONPATH: ${{ github.workspace }}/004AI代码审计/004AI-CodeGuard-upgrade/src;${{ github.workspace }}/004AI代码审计/004AI-CodeGuard-upgrade/.python-deps
+          PYTHONPATH: ${{ env.WORKER_004_DIR }}/src;${{ env.WORKER_004_DIR }}/.python-deps
         run: |
           $py = (Get-Command python).Source
-          & $py -m pytest tests/ `
+          & $py -m pytest "$env:WORKER_004_DIR/tests/" `
             --basetemp=C:/pytest-tmp/004/ `
             -o addopts= `
             -q --tb=no
@@ -109,12 +121,11 @@ jobs:
 
       - name: Run pytest (005 AI Reverse Agent)
         shell: pwsh
-        working-directory: 005AI逆向Agent
         env:
-          PYTHONPATH: ${{ github.workspace }}/005AI逆向Agent/src
+          PYTHONPATH: ${{ env.WORKER_005_DIR }}/src
         run: |
           $py = (Get-Command python).Source
-          & $py -m pytest tests/ `
+          & $py -m pytest "$env:WORKER_005_DIR/tests/" `
             --basetemp=C:/pytest-tmp/005/ `
             -o addopts= `
             -q --tb=no
@@ -122,12 +133,11 @@ jobs:
 
       - name: Run pytest (006 AI Firmware Security Agent)
         shell: pwsh
-        working-directory: 006AI-Firmware-Security-Agent
         env:
-          PYTHONPATH: ${{ github.workspace }}/006AI-Firmware-Security-Agent/src
+          PYTHONPATH: ${{ env.WORKER_006_DIR }}/src
         run: |
           $py = (Get-Command python).Source
-          & $py -m pytest tests/ `
+          & $py -m pytest "$env:WORKER_006_DIR/tests/" `
             --basetemp=C:/pytest-tmp/006/ `
             -o addopts= `
             -q --tb=no
@@ -147,13 +157,13 @@ jobs:
           import sys
           from pathlib import Path
 
-          script = Path(os.environ["GITHUB_WORKSPACE"]) / "scripts" / "inspect_worker_return.py"
+          script = Path(os.environ["INSPECT_SCRIPT"])
           spec = importlib.util.spec_from_file_location("inspect_worker_return", script)
           if spec is None or spec.loader is None:
               raise RuntimeError(f"cannot load {script}")
           module = importlib.util.module_from_spec(spec)
           spec.loader.exec_module(module)
-          module.ROOT = Path(os.environ["GITHUB_WORKSPACE"])
+          module.ROOT = Path(os.environ["SUITE_ROOT"])
           module.PY = sys.executable
           raise SystemExit(module.main())
           '@
