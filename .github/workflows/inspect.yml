@@ -1,0 +1,79 @@
+name: inspect-worker-return
+
+on:
+  pull_request:
+    paths:
+      - "001AI-SOC-Agent/**"
+      - "002AI-Vulnerability-Agent/**"
+      - "003AI Agent安全靶场/**"
+      - "004AI代码审计/**"
+      - "005AI逆向Agent/**"
+      - "006AI-Firmware-Security-Agent/**"
+      - "scripts/inspect_worker_return.py"
+      - ".github/workflows/inspect.yml"
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out suite
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 10
+
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+
+      - name: Install project dependencies
+        shell: pwsh
+        run: |
+          $py = (Get-Command python).Source
+          & $py -m pip install --disable-pip-version-check pytest pytest-mock
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          $projects = @(
+            "000shared-llm-core",
+            "001AI-SOC-Agent",
+            "002AI-Vulnerability-Agent",
+            "003AI Agent安全靶场",
+            "004AI代码审计/004AI-CodeGuard-upgrade",
+            "005AI逆向Agent",
+            "006AI-Firmware-Security-Agent"
+          )
+          foreach ($project in $projects) {
+            & $py -m pip install --disable-pip-version-check -e $project
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+
+      - name: Run inspect (6 workers)
+        shell: pwsh
+        run: |
+          $py = (Get-Command python).Source
+          $adapter = @'
+          import importlib.util
+          import os
+          import sys
+          from pathlib import Path
+
+          script = Path(os.environ["GITHUB_WORKSPACE"]) / "scripts" / "inspect_worker_return.py"
+          spec = importlib.util.spec_from_file_location("inspect_worker_return", script)
+          if spec is None or spec.loader is None:
+              raise RuntimeError(f"cannot load {script}")
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+          module.ROOT = Path(os.environ["GITHUB_WORKSPACE"])
+          module.PY = sys.executable
+          raise SystemExit(module.main())
+          '@
+          & $py -c $adapter
+          exit $LASTEXITCODE
