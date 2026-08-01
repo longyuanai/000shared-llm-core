@@ -15,7 +15,10 @@ pyyaml = "^6.0.1"
 tenacity = "^8.3.0"
 structlog = "^24.2.0"
 python-dotenv = "^1.0.1"
-fastapi = "^0.115.0"
+# 0.115.x constrains Starlette below the releases that fix the 2026
+# multipart/range advisories. Keep the minor line explicit so dependency
+# audits cannot silently resolve back to the vulnerable 0.46.x series.
+fastapi = ">=0.139.2,<0.140.0"
 uvicorn = "^0.30.0"
 
 [tool.poetry.group.dev.dependencies]
