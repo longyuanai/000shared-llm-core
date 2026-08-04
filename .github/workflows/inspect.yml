@@ -1,181 +1,142 @@
-# Layout contract: although this workflow is stored in 000shared-llm-core, it
-# expects a mono checkout rooted at GITHUB_WORKSPACE with 000shared-llm-core,
-# all six worker directories, and scripts/inspect_worker_return.py as siblings.
-# The current local repositories have no remotes, so a standalone core checkout
-# cannot satisfy this layout until the suite is published or multi-checkout is
-# configured.
-name: inspect-worker-return
+name: suite-ci
 
 on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [suite-ci]
   pull_request:
-    paths:
-      - "001AI-SOC-Agent/**"
-      - "002AI-Vulnerability-Agent/**"
-      - "003AI Agent安全靶场/**"
-      - "004AI代码审计/**"
-      - "005AI逆向Agent/**"
-      - "006AI-Firmware-Security-Agent/**"
-      - "scripts/inspect_worker_return.py"
-      - ".github/workflows/inspect.yml"
   push:
-    branches: [main]
+    branches: [main, master]
+  schedule:
+    - cron: "17 2 * * 1"
 
 permissions:
   contents: read
 
+concurrency:
+  group: suite-ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  inspect:
-    runs-on: windows-latest
-    timeout-minutes: 30
+  test-suite:
+    name: Test eight-repository suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
     env:
-      SUITE_ROOT: ${{ github.workspace }}
-      CORE_DIR: ${{ github.workspace }}/000shared-llm-core
-      WORKER_001_DIR: ${{ github.workspace }}/001AI-SOC-Agent
-      WORKER_002_DIR: ${{ github.workspace }}/002AI-Vulnerability-Agent
-      WORKER_003_DIR: ${{ github.workspace }}/003AI Agent安全靶场
-      WORKER_004_DIR: ${{ github.workspace }}/004AI代码审计/004AI-CodeGuard-upgrade
-      WORKER_005_DIR: ${{ github.workspace }}/005AI逆向Agent
-      WORKER_006_DIR: ${{ github.workspace }}/006AI-Firmware-Security-Agent
-      INSPECT_SCRIPT: ${{ github.workspace }}/scripts/inspect_worker_return.py
+      SUITE_DIR: ${{ github.workspace }}/suite
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
 
     steps:
-      - name: Check out suite
+      - name: Check out shared core
         uses: actions/checkout@v4
         with:
-          fetch-depth: 10
+          path: suite/000shared-llm-core
 
-      - name: Set up Python 3.14
+      - name: Check out integration gateway
+        uses: actions/checkout@v4
+        with:
+          repository: longyuanai/-000shared-integration
+          path: suite/000shared-integration
+          token: ${{ secrets.SUITE_READ_TOKEN || github.token }}
+
+      - name: Check out 001 SOC Agent
+        uses: actions/checkout@v4
+        with:
+          repository: longyuanai/-001AI-SOC-Agent
+          path: suite/001AI-SOC-Agent
+          token: ${{ secrets.SUITE_READ_TOKEN || github.token }}
+
+      - name: Check out 002 Vulnerability Agent
+        uses: actions/checkout@v4
+        with:
+          repository: longyuanai/002AI-Vulnerability-Agent
+          path: suite/002AI-Vulnerability-Agent
+          token: ${{ secrets.SUITE_READ_TOKEN || github.token }}
+
+      - name: Check out 003 Agent Security Lab
+        uses: actions/checkout@v4
+        with:
+          repository: longyuanai/003AI-Agent-Security-Lab
+          path: "suite/003AI Agent安全靶场"
+          token: ${{ secrets.SUITE_READ_TOKEN || github.token }}
+
+      - name: Check out 004 Code Audit
+        uses: actions/checkout@v4
+        with:
+          repository: longyuanai/004AI-Code-Audit
+          path: suite/004AI-Code-Audit
+          token: ${{ secrets.SUITE_READ_TOKEN || github.token }}
+
+      - name: Check out 005 Reverse Agent
+        uses: actions/checkout@v4
+        with:
+          repository: longyuanai/005AI-Reverse-Agent
+          path: suite/005AI-Reverse-Agent
+          token: ${{ secrets.SUITE_READ_TOKEN || github.token }}
+
+      - name: Check out 006 Firmware Security Agent
+        uses: actions/checkout@v4
+        with:
+          repository: longyuanai/006AI-Firmware-Security-Agent
+          path: suite/006AI-Firmware-Security-Agent
+          token: ${{ secrets.SUITE_READ_TOKEN || github.token }}
+
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.14"
+          python-version: "3.12"
           cache: pip
+          cache-dependency-path: suite/**/pyproject.toml
 
-      - name: Install project dependencies
-        shell: pwsh
+      - name: Install all projects
+        shell: bash
         run: |
-          $py = (Get-Command python).Source
-          & $py -m pip install --disable-pip-version-check pytest pytest-mock
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          set -euo pipefail
+          python -m pip install \
+            -e "$SUITE_DIR/000shared-llm-core" \
+            -e "$SUITE_DIR/000shared-integration" \
+            -e "$SUITE_DIR/001AI-SOC-Agent" \
+            -e "$SUITE_DIR/002AI-Vulnerability-Agent" \
+            -e "$SUITE_DIR/003AI Agent安全靶场" \
+            -e "$SUITE_DIR/004AI-Code-Audit/004AI-CodeGuard-upgrade" \
+            -e "$SUITE_DIR/005AI-Reverse-Agent" \
+            -e "$SUITE_DIR/006AI-Firmware-Security-Agent"
 
-          $projects = @(
-            $env:CORE_DIR,
-            $env:WORKER_001_DIR,
-            $env:WORKER_002_DIR,
-            $env:WORKER_003_DIR,
-            $env:WORKER_004_DIR,
-            $env:WORKER_005_DIR,
-            $env:WORKER_006_DIR
+      - name: Run all test suites
+        shell: bash
+        run: |
+          set -euo pipefail
+          projects=(
+            "core|$SUITE_DIR/000shared-llm-core"
+            "integration|$SUITE_DIR/000shared-integration"
+            "001|$SUITE_DIR/001AI-SOC-Agent"
+            "002|$SUITE_DIR/002AI-Vulnerability-Agent"
+            "003|$SUITE_DIR/003AI Agent安全靶场"
+            "004|$SUITE_DIR/004AI-Code-Audit/004AI-CodeGuard-upgrade"
+            "005|$SUITE_DIR/005AI-Reverse-Agent"
+            "006|$SUITE_DIR/006AI-Firmware-Security-Agent"
           )
-          foreach ($project in $projects) {
-            & $py -m pip install --disable-pip-version-check -e $project
-            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          }
 
-      - name: Run pytest (001 AI SOC Agent)
-        shell: pwsh
-        env:
-          PYTHONPATH: ${{ env.WORKER_001_DIR }}/src
+          for item in "${projects[@]}"; do
+            name="${item%%|*}"
+            path="${item#*|}"
+            echo "::group::pytest $name"
+            python -m pytest "$path/tests" \
+              --basetemp="$RUNNER_TEMP/pytest-$name" \
+              -o addopts= \
+              -p no:cacheprovider \
+              -q
+            echo "::endgroup::"
+          done
+
+      - name: Publish suite summary
+        if: always()
+        shell: bash
         run: |
-          $py = (Get-Command python).Source
-          & $py -m pytest "$env:WORKER_001_DIR/tests/" `
-            --basetemp=C:/pytest-tmp/001/ `
-            -o addopts= `
-            -q --tb=no
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-      - name: Run pytest (002 AI Vulnerability Agent)
-        shell: pwsh
-        env:
-          PYTHONPATH: ${{ env.WORKER_002_DIR }}/src
-        run: |
-          $py = (Get-Command python).Source
-          & $py -m pytest "$env:WORKER_002_DIR/tests/" `
-            --basetemp=C:/pytest-tmp/002/ `
-            -o addopts= `
-            -q --tb=no
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-      - name: Run pytest (003 AI Agent Security Lab)
-        shell: pwsh
-        env:
-          PYTHONPATH: ${{ env.WORKER_003_DIR }}/src
-        run: |
-          $py = (Get-Command python).Source
-          & $py -m pytest "$env:WORKER_003_DIR/tests/" `
-            --basetemp=C:/pytest-tmp/003/ `
-            -o addopts= `
-            -q --tb=no
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-      - name: Run pytest (004 AI CodeGuard)
-        shell: pwsh
-        env:
-          PYTHONPATH: ${{ env.WORKER_004_DIR }}/src;${{ env.WORKER_004_DIR }}/.python-deps
-        run: |
-          $py = (Get-Command python).Source
-          & $py -m pytest "$env:WORKER_004_DIR/tests/" `
-            --basetemp=C:/pytest-tmp/004/ `
-            -o addopts= `
-            -q --tb=no
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-      - name: Run pytest (005 AI Reverse Agent)
-        shell: pwsh
-        env:
-          PYTHONPATH: ${{ env.WORKER_005_DIR }}/src
-        run: |
-          $py = (Get-Command python).Source
-          & $py -m pytest "$env:WORKER_005_DIR/tests/" `
-            --basetemp=C:/pytest-tmp/005/ `
-            -o addopts= `
-            -q --tb=no
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-      - name: Run pytest (006 AI Firmware Security Agent)
-        shell: pwsh
-        env:
-          PYTHONPATH: ${{ env.WORKER_006_DIR }}/src
-        run: |
-          $py = (Get-Command python).Source
-          & $py -m pytest "$env:WORKER_006_DIR/tests/" `
-            --basetemp=C:/pytest-tmp/006/ `
-            -o addopts= `
-            -q --tb=no
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-      - name: Show pytest basetemp
-        shell: pwsh
-        run: Get-ChildItem -LiteralPath C:/pytest-tmp/ -Force
-
-      - name: Run inspect (6 workers)
-        shell: pwsh
-        run: |
-          $py = (Get-Command python).Source
-          $adapter = @'
-          import importlib.util
-          import os
-          import sys
-          from pathlib import Path
-
-          script = Path(os.environ["INSPECT_SCRIPT"])
-          spec = importlib.util.spec_from_file_location("inspect_worker_return", script)
-          if spec is None or spec.loader is None:
-              raise RuntimeError(f"cannot load {script}")
-          module = importlib.util.module_from_spec(spec)
-          spec.loader.exec_module(module)
-          module.ROOT = Path(os.environ["SUITE_ROOT"])
-          module.PY = sys.executable
-          raise SystemExit(module.main())
-          '@
-          $resultFile = Join-Path $env:RUNNER_TEMP "inspect-worker-return.txt"
-          & $py -c $adapter 2>&1 | Tee-Object -FilePath $resultFile
-          $inspectExit = $LASTEXITCODE
-
-          Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value "## Six-worker inspection"
-          Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value '```text'
-          Get-Content -LiteralPath $resultFile |
-            Select-Object -Last 12 |
-            Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
-          Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value '```'
-
-          exit $inspectExit
+          {
+            echo "## Multi-repository suite"
+            echo
+            echo "- Core + integration gateway + six product repositories"
+            echo "- Python 3.12 on Ubuntu"
+            echo "- Triggered by: \`${{ github.event_name }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
