@@ -32,7 +32,7 @@ jobs:
       CODE_REF: ${{ github.event.client_payload.code_sha || '3969b30fc07e2f00794607e7cc9ab3a93e8f28e0' }}
       REVERSE_REF: ${{ github.event.client_payload.reverse_sha || '72a474c6977ebe28203cb6b3ebb221ab3fa4607f' }}
       FIRMWARE_REF: ${{ github.event.client_payload.firmware_sha || '25e6ca6f94df4ae863c696665a7cda9d7b0c0dc2' }}
-      WEB_UI_REF: ${{ github.event.client_payload.web_ui_sha || 'da3176ee530f0a079e700a4a51f0ddfc9f857000' }}
+      WEB_UI_REF: ${{ github.event.client_payload.web_ui_sha || 'c26365548d4114fc1e35be46de77876820ca229a' }}
 
     steps:
       - name: Check out shared core
