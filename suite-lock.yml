@@ -1,0 +1,62 @@
+{
+  "schema": 1,
+  "generated_at": "2026-08-05",
+  "repositories": [
+    {
+      "key": "core",
+      "repository": "longyuanai/000shared-llm-core",
+      "commit": "self",
+      "path": "000shared-llm-core",
+      "install_path": "."
+    },
+    {
+      "key": "integration",
+      "repository": "longyuanai/-000shared-integration",
+      "commit": "b134636b9a91d080fe77457605d85e2ce05b989f",
+      "path": "000shared-integration",
+      "install_path": "."
+    },
+    {
+      "key": "soc",
+      "repository": "longyuanai/-001AI-SOC-Agent",
+      "commit": "accfdfd281ab6641a1b54389519e63c37d471233",
+      "path": "001AI-SOC-Agent",
+      "install_path": "."
+    },
+    {
+      "key": "vulnerability",
+      "repository": "longyuanai/002AI-Vulnerability-Agent",
+      "commit": "a434d0a00dbeced121302ea58339b655c6a28148",
+      "path": "002AI-Vulnerability-Agent",
+      "install_path": "."
+    },
+    {
+      "key": "lab",
+      "repository": "longyuanai/003AI-Agent-Security-Lab",
+      "commit": "3862acfbe430cc09654c22d8684900a768cd3071",
+      "path": "003AI Agent安全靶场",
+      "install_path": "."
+    },
+    {
+      "key": "code",
+      "repository": "longyuanai/004AI-Code-Audit",
+      "commit": "9c565087d9e72be8383b552136b4872dc17ae6e9",
+      "path": "004AI-Code-Audit",
+      "install_path": "004AI-CodeGuard-upgrade"
+    },
+    {
+      "key": "reverse",
+      "repository": "longyuanai/005AI-Reverse-Agent",
+      "commit": "72a474c6977ebe28203cb6b3ebb221ab3fa4607f",
+      "path": "005AI-Reverse-Agent",
+      "install_path": "."
+    },
+    {
+      "key": "firmware",
+      "repository": "longyuanai/006AI-Firmware-Security-Agent",
+      "commit": "0e7f5382c1323f1dd22dbb95f5941f90a465f44a",
+      "path": "006AI-Firmware-Security-Agent",
+      "install_path": "."
+    }
+  ]
+}

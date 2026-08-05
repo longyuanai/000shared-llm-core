@@ -76,6 +76,21 @@ poetry run pytest -v
 
 All tests use mocked HTTP — no real LLM call needed.
 
+## Multi-repository compatibility CI
+
+[`suite-lock.yml`](suite-lock.yml) records the exact repository commit and
+install path for the IntegrationGateway and six product projects. The core is
+fixed by the workflow's triggering SHA (`self` in the lock). The central
+`suite-ci` workflow checks out that immutable set before installing or testing
+anything, so an unrelated default-branch update cannot silently change the
+compatibility result.
+
+A product repository can validate a candidate commit with a `suite-ci`
+`repository_dispatch` payload containing one of `integration_sha`, `soc_sha`,
+`vulnerability_sha`, `lab_sha`, `code_sha`, `reverse_sha`, or `firmware_sha`.
+Only dispatch runs may override a locked product commit; normal pushes, pull
+requests, schedules, and manual runs use the lock unchanged.
+
 ## Repo layout
 
 ```
