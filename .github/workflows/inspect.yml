@@ -25,13 +25,14 @@ jobs:
     env:
       SUITE_DIR: ${{ github.workspace }}/suite
       PIP_DISABLE_PIP_VERSION_CHECK: "1"
-      INTEGRATION_REF: ${{ github.event.client_payload.integration_sha || 'b134636b9a91d080fe77457605d85e2ce05b989f' }}
+      INTEGRATION_REF: ${{ github.event.client_payload.integration_sha || '3c4da725a84604212fcd45fded86f6317bf6f3bb' }}
       SOC_REF: ${{ github.event.client_payload.soc_sha || 'accfdfd281ab6641a1b54389519e63c37d471233' }}
-      VULNERABILITY_REF: ${{ github.event.client_payload.vulnerability_sha || 'a434d0a00dbeced121302ea58339b655c6a28148' }}
+      VULNERABILITY_REF: ${{ github.event.client_payload.vulnerability_sha || 'b3ce7e9fa457f3ca9ebfeaaf70691059c8b19b3e' }}
       LAB_REF: ${{ github.event.client_payload.lab_sha || '3862acfbe430cc09654c22d8684900a768cd3071' }}
-      CODE_REF: ${{ github.event.client_payload.code_sha || '9c565087d9e72be8383b552136b4872dc17ae6e9' }}
+      CODE_REF: ${{ github.event.client_payload.code_sha || '3969b30fc07e2f00794607e7cc9ab3a93e8f28e0' }}
       REVERSE_REF: ${{ github.event.client_payload.reverse_sha || '72a474c6977ebe28203cb6b3ebb221ab3fa4607f' }}
-      FIRMWARE_REF: ${{ github.event.client_payload.firmware_sha || '0e7f5382c1323f1dd22dbb95f5941f90a465f44a' }}
+      FIRMWARE_REF: ${{ github.event.client_payload.firmware_sha || '25e6ca6f94df4ae863c696665a7cda9d7b0c0dc2' }}
+      WEB_UI_REF: ${{ github.event.client_payload.web_ui_sha || 'da3176ee530f0a079e700a4a51f0ddfc9f857000' }}
 
     steps:
       - name: Check out shared core

@@ -1,6 +1,8 @@
 {
   "schema": 1,
-  "generated_at": "2026-08-05-M2-unlock",
+  "generated_at": "2026-08-05-M2.1-closure",
+  "python_supported": ["3.8", "3.9", "3.10", "3.11"],
+  "node_supported": ["20", "22"],
   "repositories": [
     {
       "key": "core",
@@ -12,7 +14,7 @@
     {
       "key": "integration",
       "repository": "longyuanai/-000shared-integration",
-      "commit": "59c128a332267f3e40bfa6b6ff8cba3b0c7db60f",
+      "commit": "3c4da725a84604212fcd45fded86f6317bf6f3bb",
       "path": "000shared-integration",
       "install_path": "."
     },
@@ -26,7 +28,7 @@
     {
       "key": "vulnerability",
       "repository": "longyuanai/002AI-Vulnerability-Agent",
-      "commit": "a434d0a00dbeced121302ea58339b655c6a28148",
+      "commit": "b3ce7e9fa457f3ca9ebfeaaf70691059c8b19b3e",
       "path": "002AI-Vulnerability-Agent",
       "install_path": "."
     },
@@ -40,7 +42,7 @@
     {
       "key": "code",
       "repository": "longyuanai/004AI-Code-Audit",
-      "commit": "9c565087d9e72be8383b552136b4872dc17ae6e9",
+      "commit": "3969b30fc07e2f00794607e7cc9ab3a93e8f28e0",
       "path": "004AI-Code-Audit",
       "install_path": "004AI-CodeGuard-upgrade"
     },
@@ -54,9 +56,20 @@
     {
       "key": "firmware",
       "repository": "longyuanai/006AI-Firmware-Security-Agent",
-      "commit": "0e7f5382c1323f1dd22dbb95f5941f90a465f44a",
+      "commit": "25e6ca6f94df4ae863c696665a7cda9d7b0c0dc2",
       "path": "006AI-Firmware-Security-Agent",
       "install_path": "."
+    },
+    {
+      "key": "web_ui",
+      "repository": "longyuanai/web-ui",
+      "commit": "da3176ee530f0a079e700a4a51f0ddfc9f857000",
+      "path": "web-ui",
+      "install_path": ".",
+      "stack": "node",
+      "node_version": "20",
+      "ci_workflow": "web-ui-ci",
+      "ci_steps": ["npm ci", "npm run lint", "npm run typecheck", "npm run build", "npm test"]
     }
   ]
 }
