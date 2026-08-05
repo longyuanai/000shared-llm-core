@@ -1,8 +1,9 @@
 {
   "schema": 1,
   "generated_at": "2026-08-05-M2.1-closure",
-  "python_supported": ["3.8", "3.9", "3.10", "3.11"],
-  "node_supported": ["20", "22"],
+  "python_supported": ["3.11"],
+  "python_notes": "All seven Python packages pin python = \"^3.11\" in pyproject.toml. Windows hosts running pytest must use the absolute Python interpreter (C:\\\\Users\\\\<user>\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python311\\\\python.exe) — bare `python` on Windows PATH can resolve to the Microsoft Store stub and surface as exit 49. Test invocations on Windows also need `--basetemp=C:/pytest-tmp/ -o addopts=` (see CLAUDE.md §3.1, §3.2).",
+  "node_supported": ["20"],
   "repositories": [
     {
       "key": "core",
