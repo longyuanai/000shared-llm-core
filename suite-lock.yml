@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generated_at": "2026-08-05",
+  "generated_at": "2026-08-05-M2-unlock",
   "repositories": [
     {
       "key": "core",
@@ -12,7 +12,7 @@
     {
       "key": "integration",
       "repository": "longyuanai/-000shared-integration",
-      "commit": "b134636b9a91d080fe77457605d85e2ce05b989f",
+      "commit": "59c128a332267f3e40bfa6b6ff8cba3b0c7db60f",
       "path": "000shared-integration",
       "install_path": "."
     },
