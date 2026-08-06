@@ -32,7 +32,7 @@ jobs:
       CODE_REF: ${{ github.event.client_payload.code_sha || '3969b30fc07e2f00794607e7cc9ab3a93e8f28e0' }}
       REVERSE_REF: ${{ github.event.client_payload.reverse_sha || '72a474c6977ebe28203cb6b3ebb221ab3fa4607f' }}
       FIRMWARE_REF: ${{ github.event.client_payload.firmware_sha || '25e6ca6f94df4ae863c696665a7cda9d7b0c0dc2' }}
-      WEB_UI_REF: ${{ github.event.client_payload.web_ui_sha || 'c26365548d4114fc1e35be46de77876820ca229a' }}
+      WEB_UI_REF: ${{ github.event.client_payload.web_ui_sha || '3f814afb9bf26d37f3fa9b7d175c7bd2e40d372f' }}
 
     steps:
       - name: Check out shared core
@@ -96,6 +96,14 @@ jobs:
           path: suite/006AI-Firmware-Security-Agent
           token: ${{ secrets.SUITE_READ_TOKEN || github.token }}
 
+      - name: Check out web UI
+        uses: actions/checkout@v4
+        with:
+          repository: longyuanai/web-ui
+          ref: ${{ env.WEB_UI_REF }}
+          path: suite/web-ui
+          token: ${{ secrets.SUITE_READ_TOKEN || github.token }}
+
       - name: Verify locked repository set
         shell: bash
         env:
@@ -117,6 +125,7 @@ jobs:
               "code": os.environ["CODE_REF"],
               "reverse": os.environ["REVERSE_REF"],
               "firmware": os.environ["FIRMWARE_REF"],
+              "web_ui": os.environ["WEB_UI_REF"],
           }
           errors = []
           for entry in lock["repositories"]:
