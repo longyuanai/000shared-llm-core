@@ -29,7 +29,7 @@ jobs:
       SOC_REF: ${{ github.event.client_payload.soc_sha || 'accfdfd281ab6641a1b54389519e63c37d471233' }}
       VULNERABILITY_REF: ${{ github.event.client_payload.vulnerability_sha || 'b3ce7e9fa457f3ca9ebfeaaf70691059c8b19b3e' }}
       LAB_REF: ${{ github.event.client_payload.lab_sha || '3862acfbe430cc09654c22d8684900a768cd3071' }}
-      CODE_REF: ${{ github.event.client_payload.code_sha || '3969b30fc07e2f00794607e7cc9ab3a93e8f28e0' }}
+      CODE_REF: ${{ github.event.client_payload.code_sha || 'c72b26231c8e6ed15710e3b8eb711d45947ac32d' }}
       REVERSE_REF: ${{ github.event.client_payload.reverse_sha || '72a474c6977ebe28203cb6b3ebb221ab3fa4607f' }}
       FIRMWARE_REF: ${{ github.event.client_payload.firmware_sha || '25e6ca6f94df4ae863c696665a7cda9d7b0c0dc2' }}
       WEB_UI_REF: ${{ github.event.client_payload.web_ui_sha || '3f814afb9bf26d37f3fa9b7d175c7bd2e40d372f' }}
@@ -161,8 +161,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # 000shared-llm-core is deliberately NOT listed here. All seven
+          # products declare it as a Poetry path dependency, which poetry-core
+          # emits as a direct file:// reference. Requesting it here as well
+          # makes pip see the same package as both an editable and a
+          # non-editable direct reference and abort with ResolutionImpossible.
+          # Installing only the products pulls core in exactly once, via those
+          # path dependencies.
           python -m pip install \
-            -e "$SUITE_DIR/000shared-llm-core" \
             -e "$SUITE_DIR/000shared-integration" \
             -e "$SUITE_DIR/001AI-SOC-Agent" \
             -e "$SUITE_DIR/002AI-Vulnerability-Agent" \
