@@ -15,8 +15,16 @@ pyyaml = "^6.0.1"
 tenacity = "^8.3.0"
 structlog = "^24.2.0"
 python-dotenv = "^1.0.1"
-fastapi = ">=0.115,<1.0"
-uvicorn = ">=0.30,<1.0"
+# 0.115.x constrains Starlette below the releases that fix the 2026
+# multipart/range advisories. Keep the minor line explicit so dependency
+# audits cannot silently resolve back to the vulnerable 0.46.x series.
+fastapi = ">=0.139.2,<0.140.0"
+# Floor tracks 001AI-SOC-Agent, which pins uvicorn==0.51.0 exactly. The whole
+# suite is installed into one environment by .github/workflows/inspect.yml, so
+# a caret pin here (^0.30.0 => <0.31.0) makes that install unsatisfiable.
+uvicorn = ">=0.51,<1.0"
+# Used directly by src/shared_llm_core/templates.py; previously undeclared and
+# resolved only as a transitive dependency of fastapi.
 jinja2 = "^3.1.4"
 
 [tool.poetry.group.dev.dependencies]
