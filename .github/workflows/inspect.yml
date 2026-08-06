@@ -212,11 +212,14 @@ jobs:
             name="${item%%|*}"
             path="${item#*|}"
             echo "::group::pytest $name"
-            python -m pytest "$path/tests" \
-              --basetemp="$RUNNER_TEMP/pytest-$name" \
-              -o addopts= \
-              -p no:cacheprovider \
-              -q
+            (
+              cd "$path"
+              python -m pytest tests \
+                --basetemp="$RUNNER_TEMP/pytest-$name" \
+                -o addopts= \
+                -p no:cacheprovider \
+                -q
+            )
             echo "::endgroup::"
           done
 
