@@ -36,12 +36,12 @@ jobs:
 
     steps:
       - name: Check out shared core
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: suite/000shared-llm-core
 
       - name: Check out integration gateway
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: longyuanai/-000shared-integration
           ref: ${{ env.INTEGRATION_REF }}
@@ -49,7 +49,7 @@ jobs:
           token: ${{ secrets.SUITE_READ_TOKEN || github.token }}
 
       - name: Check out 001 SOC Agent
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: longyuanai/-001AI-SOC-Agent
           ref: ${{ env.SOC_REF }}
@@ -57,7 +57,7 @@ jobs:
           token: ${{ secrets.SUITE_READ_TOKEN || github.token }}
 
       - name: Check out 002 Vulnerability Agent
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: longyuanai/002AI-Vulnerability-Agent
           ref: ${{ env.VULNERABILITY_REF }}
@@ -65,7 +65,7 @@ jobs:
           token: ${{ secrets.SUITE_READ_TOKEN || github.token }}
 
       - name: Check out 003 Agent Security Lab
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: longyuanai/003AI-Agent-Security-Lab
           ref: ${{ env.LAB_REF }}
@@ -73,7 +73,7 @@ jobs:
           token: ${{ secrets.SUITE_READ_TOKEN || github.token }}
 
       - name: Check out 004 Code Audit
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: longyuanai/004AI-Code-Audit
           ref: ${{ env.CODE_REF }}
@@ -81,7 +81,7 @@ jobs:
           token: ${{ secrets.SUITE_READ_TOKEN || github.token }}
 
       - name: Check out 005 Reverse Agent
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: longyuanai/005AI-Reverse-Agent
           ref: ${{ env.REVERSE_REF }}
@@ -89,7 +89,7 @@ jobs:
           token: ${{ secrets.SUITE_READ_TOKEN || github.token }}
 
       - name: Check out 006 Firmware Security Agent
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: longyuanai/006AI-Firmware-Security-Agent
           ref: ${{ env.FIRMWARE_REF }}
@@ -97,7 +97,7 @@ jobs:
           token: ${{ secrets.SUITE_READ_TOKEN || github.token }}
 
       - name: Check out web UI
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: longyuanai/web-ui
           ref: ${{ env.WEB_UI_REF }}
@@ -151,7 +151,7 @@ jobs:
           PY
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
