@@ -1,7 +1,6 @@
 # ADR-002 · 套件仓库布局与 shared core 路径依赖
 
-**状态**: 提议（以九仓 `suite-ci` 首次成功为接受门槛；当前受 GitHub Actions
-平台事故阻塞）
+**状态**: 接受
 **日期**: 2026-08-07
 **决策方**: longyuanai 技术负责人
 **关联文件**: `suite-lock.yml`、`.github/workflows/inspect.yml`
@@ -84,7 +83,7 @@ Git 仓库。若为适配该机器把依赖写成 `../../000shared-llm-core`，�
 
 - 004 锁定提交：`e500dab917ee0fe9b4c1dbbb725ba7a86c7d82b2`
 - IntegrationGateway 锁定提交：`d35ea7ac676a7356ed3e545756687c5af82e2e94`
-- suite-ci 候选：包含上述锁定 SHA 的当前 core 分支 head
+- 接受用 core 提交：`30892812ac9649228cf18b0ecc18314be48aa5b2`
 - Run `31120786639` 已证明九仓 checkout、锁校验、安装以及 core 至 003 的测试
   通过，并发现 004 的 CPython ABI 测试夹具缺陷。
 - Run `31121452216` attempt 1 在 GitHub `Set up job` 阶段、任何 checkout 之前因
@@ -92,4 +91,8 @@ Git 仓库。若为适配该机器把依赖写成 `../../000shared-llm-core`，�
   再次通过 core 至 003，并使 004 达到 175 passed / 2 failed；剩余失败来自 E2E
   对本机嵌套目录层级的固定假设。
 - 锁定的 `e500dab` 已改为从祖先目录发现 suite 根；本机 004 全量 177 tests 通过。
-  新锁定 run 成功后将本 ADR 状态改为“接受”。
+- [`suite-ci` run `31123850926`](https://github.com/longyuanai/000shared-llm-core/actions/runs/31123850926)
+  在 Ubuntu / Python 3.12 上成功：九个仓库全部按锁定 SHA 检出并通过校验，私有
+  `web-ui` checkout 成功，八个 Python 测试组共 `1868 passed, 5 skipped,
+  1 warning, 0 failed`。其中 004 为 `177 passed, 1 warning`，因此本 ADR 的全部
+  接受条件均已满足。
