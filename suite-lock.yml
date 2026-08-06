@@ -36,7 +36,7 @@
     {
       "key": "lab",
       "repository": "longyuanai/003AI-Agent-Security-Lab",
-      "commit": "3862acfbe430cc09654c22d8684900a768cd3071",
+      "commit": "fa71e06e02c9c300c34d1ec49de1a1fad1ca8597",
       "path": "003AI Agent安全靶场",
       "install_path": "."
     },

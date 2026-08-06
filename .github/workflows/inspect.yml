@@ -28,7 +28,7 @@ jobs:
       INTEGRATION_REF: ${{ github.event.client_payload.integration_sha || '0578664ba53131c682c2ec5df03161ba6399d933' }}
       SOC_REF: ${{ github.event.client_payload.soc_sha || 'accfdfd281ab6641a1b54389519e63c37d471233' }}
       VULNERABILITY_REF: ${{ github.event.client_payload.vulnerability_sha || 'b3ce7e9fa457f3ca9ebfeaaf70691059c8b19b3e' }}
-      LAB_REF: ${{ github.event.client_payload.lab_sha || '3862acfbe430cc09654c22d8684900a768cd3071' }}
+      LAB_REF: ${{ github.event.client_payload.lab_sha || 'fa71e06e02c9c300c34d1ec49de1a1fad1ca8597' }}
       CODE_REF: ${{ github.event.client_payload.code_sha || 'c72b26231c8e6ed15710e3b8eb711d45947ac32d' }}
       REVERSE_REF: ${{ github.event.client_payload.reverse_sha || '72a474c6977ebe28203cb6b3ebb221ab3fa4607f' }}
       FIRMWARE_REF: ${{ github.event.client_payload.firmware_sha || '25e6ca6f94df4ae863c696665a7cda9d7b0c0dc2' }}
