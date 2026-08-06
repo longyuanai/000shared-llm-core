@@ -1,0 +1,197 @@
+name: publish-gateway-image
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Mutable pre-release image tag
+        required: true
+        default: m21-preprod
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: publish-gateway-image
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: longyuanai/integration-gateway
+  SUITE_DIR: ${{ github.workspace }}/suite
+  INTEGRATION_REF: d14d1ab9f2f20d9ffb63e96ad5b92e546850da33
+  SOC_REF: accfdfd281ab6641a1b54389519e63c37d471233
+  VULNERABILITY_REF: b3ce7e9fa457f3ca9ebfeaaf70691059c8b19b3e
+  LAB_REF: fa71e06e02c9c300c34d1ec49de1a1fad1ca8597
+  CODE_REF: e500dab917ee0fe9b4c1dbbb725ba7a86c7d82b2
+  REVERSE_REF: 72a474c6977ebe28203cb6b3ebb221ab3fa4607f
+  FIRMWARE_REF: 25e6ca6f94df4ae863c696665a7cda9d7b0c0dc2
+
+jobs:
+  build-and-publish:
+    name: Build locked Gateway image
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Validate image tag
+        shell: bash
+        env:
+          IMAGE_TAG: ${{ inputs.tag }}
+        run: |
+          if [[ ! "$IMAGE_TAG" =~ ^[a-z0-9][a-z0-9._-]{0,127}$ ]]; then
+            echo "Invalid OCI image tag: $IMAGE_TAG" >&2
+            exit 1
+          fi
+
+      - name: Check out shared core
+        uses: actions/checkout@v7
+        with:
+          path: suite/000shared-llm-core
+          persist-credentials: false
+
+      - name: Check out integration gateway
+        uses: actions/checkout@v7
+        with:
+          repository: longyuanai/-000shared-integration
+          ref: ${{ env.INTEGRATION_REF }}
+          path: suite/000shared-integration
+          persist-credentials: false
+
+      - name: Check out 001 SOC Agent
+        uses: actions/checkout@v7
+        with:
+          repository: longyuanai/-001AI-SOC-Agent
+          ref: ${{ env.SOC_REF }}
+          path: suite/001AI-SOC-Agent
+          persist-credentials: false
+
+      - name: Check out 002 Vulnerability Agent
+        uses: actions/checkout@v7
+        with:
+          repository: longyuanai/002AI-Vulnerability-Agent
+          ref: ${{ env.VULNERABILITY_REF }}
+          path: suite/002AI-Vulnerability-Agent
+          persist-credentials: false
+
+      - name: Check out 003 Agent Security Lab
+        uses: actions/checkout@v7
+        with:
+          repository: longyuanai/003AI-Agent-Security-Lab
+          ref: ${{ env.LAB_REF }}
+          path: "suite/003AI Agent安全靶场"
+          persist-credentials: false
+
+      - name: Check out 004 Code Audit
+        uses: actions/checkout@v7
+        with:
+          repository: longyuanai/004AI-Code-Audit
+          ref: ${{ env.CODE_REF }}
+          path: suite/004AI-Code-Audit
+          persist-credentials: false
+
+      - name: Check out 005 Reverse Agent
+        uses: actions/checkout@v7
+        with:
+          repository: longyuanai/005AI-Reverse-Agent
+          ref: ${{ env.REVERSE_REF }}
+          path: suite/005AI-Reverse-Agent
+          persist-credentials: false
+
+      - name: Check out 006 Firmware Security Agent
+        uses: actions/checkout@v7
+        with:
+          repository: longyuanai/006AI-Firmware-Security-Agent
+          ref: ${{ env.FIRMWARE_REF }}
+          path: suite/006AI-Firmware-Security-Agent
+          persist-credentials: false
+
+      - name: Verify locked image source set
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import pathlib
+          import subprocess
+
+          suite = pathlib.Path(os.environ["SUITE_DIR"])
+          lock = json.loads((suite / "000shared-llm-core" / "suite-lock.yml").read_text())
+          expected = {
+              "core": os.environ["GITHUB_SHA"],
+              "integration": os.environ["INTEGRATION_REF"],
+              "soc": os.environ["SOC_REF"],
+              "vulnerability": os.environ["VULNERABILITY_REF"],
+              "lab": os.environ["LAB_REF"],
+              "code": os.environ["CODE_REF"],
+              "reverse": os.environ["REVERSE_REF"],
+              "firmware": os.environ["FIRMWARE_REF"],
+          }
+          entries = {entry["key"]: entry for entry in lock["repositories"]}
+          errors = []
+          for key, expected_sha in expected.items():
+              entry = entries[key]
+              path = suite / entry["path"]
+              actual_sha = subprocess.check_output(
+                  ["git", "-C", str(path), "rev-parse", "HEAD"], text=True
+              ).strip()
+              if actual_sha != expected_sha:
+                  errors.append(f"{key}: checked out {actual_sha}, expected {expected_sha}")
+              locked_sha = expected_sha if key == "core" else entry["commit"]
+              if locked_sha != expected_sha:
+                  errors.append(f"{key}: suite-lock.yml has {locked_sha}, expected {expected_sha}")
+          if errors:
+              raise SystemExit("\n".join(errors))
+          print(f"Verified {len(expected)} locked image-source repositories")
+          PY
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
+
+      - name: Log in to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate image metadata
+        id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=${{ inputs.tag }}
+            type=sha,prefix=core-
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+
+      - name: Build and publish image
+        id: build
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+        with:
+          context: suite
+          file: suite/000shared-integration/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=integration-gateway
+          cache-to: type=gha,mode=max,scope=integration-gateway
+          provenance: mode=max
+          sbom: true
+
+      - name: Publish image summary
+        shell: bash
+        run: |
+          {
+            echo "## IntegrationGateway image"
+            echo
+            echo "- Image: \`${REGISTRY}/${IMAGE_NAME}:${{ inputs.tag }}\`"
+            echo "- Digest: \`${{ steps.build.outputs.digest }}\`"
+            echo "- Platform: \`linux/amd64\`"
+            echo "- Source: eight locked Python repositories"
+          } >> "$GITHUB_STEP_SUMMARY"

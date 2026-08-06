@@ -25,7 +25,7 @@ jobs:
     env:
       SUITE_DIR: ${{ github.workspace }}/suite
       PIP_DISABLE_PIP_VERSION_CHECK: "1"
-      INTEGRATION_REF: ${{ github.event.client_payload.integration_sha || 'd35ea7ac676a7356ed3e545756687c5af82e2e94' }}
+      INTEGRATION_REF: ${{ github.event.client_payload.integration_sha || 'd14d1ab9f2f20d9ffb63e96ad5b92e546850da33' }}
       SOC_REF: ${{ github.event.client_payload.soc_sha || 'accfdfd281ab6641a1b54389519e63c37d471233' }}
       VULNERABILITY_REF: ${{ github.event.client_payload.vulnerability_sha || 'b3ce7e9fa457f3ca9ebfeaaf70691059c8b19b3e' }}
       LAB_REF: ${{ github.event.client_payload.lab_sha || 'fa71e06e02c9c300c34d1ec49de1a1fad1ca8597' }}
