@@ -15,7 +15,7 @@
     {
       "key": "integration",
       "repository": "longyuanai/-000shared-integration",
-      "commit": "0578664ba53131c682c2ec5df03161ba6399d933",
+      "commit": "d35ea7ac676a7356ed3e545756687c5af82e2e94",
       "path": "000shared-integration",
       "install_path": "."
     },
