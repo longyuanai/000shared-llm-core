@@ -177,6 +177,22 @@ jobs:
             -e "$SUITE_DIR/005AI-Reverse-Agent" \
             -e "$SUITE_DIR/006AI-Firmware-Security-Agent"
 
+      - name: Install test tooling
+        shell: bash
+        run: |
+          set -euo pipefail
+          # `pip install -e` ignores Poetry's dev dependency group, so nothing
+          # above installs a test runner. Union of the [tool.poetry.group.dev]
+          # entries that the pytest step actually imports, across all eight
+          # Python repositories. Lint/type tools (ruff, mypy, types-pyyaml) are
+          # deliberately excluded — no test imports them.
+          python -m pip install \
+            "pytest>=8.2" \
+            pytest-asyncio \
+            pytest-mock \
+            jsonschema \
+            yara-python
+
       - name: Run all test suites
         shell: bash
         run: |
