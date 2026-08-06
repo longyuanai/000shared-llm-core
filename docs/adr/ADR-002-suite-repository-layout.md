@@ -82,12 +82,14 @@ Git 仓库。若为适配该机器把依赖写成 `../../000shared-llm-core`，�
 
 ## 验证记录
 
-- 004 锁定提交：`475e1a9deeb971745fa9e886cad4b1acd4db92cb`
+- 004 锁定提交：`e500dab917ee0fe9b4c1dbbb725ba7a86c7d82b2`
 - IntegrationGateway 锁定提交：`d35ea7ac676a7356ed3e545756687c5af82e2e94`
-- suite-ci 候选提交：`594d5698387d5e65ce16934e241231e6f640fec4`
+- suite-ci 候选：包含上述锁定 SHA 的当前 core 分支 head
 - Run `31120786639` 已证明九仓 checkout、锁校验、安装以及 core 至 003 的测试
-  通过，并发现 004 的 CPython ABI 测试夹具缺陷；该缺陷已在锁定的 `475e1a9`
-  修复，本机 004 全量 177 tests 通过。
-- Run `31121452216` 在 GitHub `Set up job` 阶段、任何 checkout 之前因官方 Actions
-  major outage 失败，不构成仓库验证结果。事故恢复后必须 rerun；成功后将本 ADR
-  状态改为“接受”。
+  通过，并发现 004 的 CPython ABI 测试夹具缺陷。
+- Run `31121452216` attempt 1 在 GitHub `Set up job` 阶段、任何 checkout 之前因
+  官方 Actions major outage 失败。Attempt 2 完成全部 checkout、锁校验、安装，
+  再次通过 core 至 003，并使 004 达到 175 passed / 2 failed；剩余失败来自 E2E
+  对本机嵌套目录层级的固定假设。
+- 锁定的 `e500dab` 已改为从祖先目录发现 suite 根；本机 004 全量 177 tests 通过。
+  新锁定 run 成功后将本 ADR 状态改为“接受”。
