@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
   test-suite:
-    name: Test eight-repository suite
+    name: Test nine-repository suite
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
@@ -167,7 +167,7 @@ jobs:
             -e "$SUITE_DIR/001AI-SOC-Agent" \
             -e "$SUITE_DIR/002AI-Vulnerability-Agent" \
             -e "$SUITE_DIR/003AI Agent安全靶场" \
-            -e "$SUITE_DIR/004AI-Code-Audit/004AI-CodeGuard-upgrade" \
+            -e "$SUITE_DIR/004AI-Code-Audit" \
             -e "$SUITE_DIR/005AI-Reverse-Agent" \
             -e "$SUITE_DIR/006AI-Firmware-Security-Agent"
 
@@ -181,7 +181,7 @@ jobs:
             "001|$SUITE_DIR/001AI-SOC-Agent"
             "002|$SUITE_DIR/002AI-Vulnerability-Agent"
             "003|$SUITE_DIR/003AI Agent安全靶场"
-            "004|$SUITE_DIR/004AI-Code-Audit/004AI-CodeGuard-upgrade"
+            "004|$SUITE_DIR/004AI-Code-Audit"
             "005|$SUITE_DIR/005AI-Reverse-Agent"
             "006|$SUITE_DIR/006AI-Firmware-Security-Agent"
           )

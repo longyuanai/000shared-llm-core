@@ -45,7 +45,7 @@
       "repository": "longyuanai/004AI-Code-Audit",
       "commit": "3969b30fc07e2f00794607e7cc9ab3a93e8f28e0",
       "path": "004AI-Code-Audit",
-      "install_path": "004AI-CodeGuard-upgrade"
+      "install_path": "."
     },
     {
       "key": "reverse",
