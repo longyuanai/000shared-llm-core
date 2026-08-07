@@ -21,7 +21,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: longyuanai/integration-gateway
   SUITE_DIR: ${{ github.workspace }}/suite
-  INTEGRATION_REF: d14d1ab9f2f20d9ffb63e96ad5b92e546850da33
+  INTEGRATION_REF: e551c1a8fda0bdb3092392a797437e221ac77d24
   SOC_REF: accfdfd281ab6641a1b54389519e63c37d471233
   VULNERABILITY_REF: b3ce7e9fa457f3ca9ebfeaaf70691059c8b19b3e
   LAB_REF: fa71e06e02c9c300c34d1ec49de1a1fad1ca8597
@@ -149,6 +149,37 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
+
+      - name: Verify source image excludes local artifacts
+        shell: bash
+        run: |
+          docker buildx build \
+            --target source \
+            --load \
+            --tag integration-gateway:source-audit \
+            --file "$SUITE_DIR/000shared-integration/Dockerfile" \
+            "$SUITE_DIR"
+
+          file_violations="$(
+            docker run --rm --entrypoint /usr/bin/find integration-gateway:source-audit \
+              /suite -type f \( \
+                -name '.env' -o -name '.env.*' -o -name '*.pem' -o \
+                -name '*.key' -o -name '*.trace' -o -name '*.sqlite3' \
+              \) -print
+          )"
+          directory_violations="$(
+            docker run --rm --entrypoint /usr/bin/find integration-gateway:source-audit \
+              /suite -type d \( \
+                -name '.git' -o -name 'node_modules' -o \
+                -name 'playwright-report' -o -name 'test-results' \
+              \) -print
+          )"
+
+          if [[ -n "${file_violations}${directory_violations}" ]]; then
+            printf '%s\n' "$file_violations" "$directory_violations" >&2
+            echo "Sensitive or local-only artifacts entered the image context" >&2
+            exit 1
+          fi
 
       - name: Log in to GHCR
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
