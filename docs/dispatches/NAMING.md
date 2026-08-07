@@ -1,8 +1,8 @@
-# 派活指令命名规范 · v0.5 / v0.6
+# 派活指令命名规范 · v0.5 及后续阶段
 
 > **位置**: `000shared-llm-core/docs/dispatches/`
-> **适用**: 所有派活文档(001-S3、002-S3、...、006-S5、005-FINAL)
-> **生成日期**: 2026-07-24
+> **适用**: `docs/dispatches/` 下所有派活文档
+> **最近更新**: 2026-08-07
 
 ---
 
@@ -14,8 +14,8 @@
 
 | 段 | 含义 | 取值 |
 |----|------|------|
-| `STAGE` | v0.5 阶段号 | `005` (基础契约) / `001~006` (产品升级) |
-| `SCODE` | 子阶段代码 | `S3` / `S4` / `S5` / `INTEG` / `UI` / `FINAL` |
+| `STAGE` | 派活阶段号 | `001~006` (历史产品升级) / `007` (CI) / `008` (M2 运维) / 后续递增 |
+| `SCODE` | 子阶段代码 | `S3` / `S4` / `S5` / `INTEG` / `UI` / `FINAL` / `CI` / `M2-OPS` |
 
 **示例**:
 - `005-CONTRACT-CODEX-DISPATCH.md` — Week 9,锁 v0.5 §7-§10 契约
@@ -25,6 +25,7 @@
 - `005-INTEG.md` — Week 11,集成层新建(`000shared-integration/`)
 - `005-UI.md` — Week 12,Web Dashboard(`web-ui/`)
 - `005-FINAL.md` — Week 13,v1.0 收尾(docker + e2e + Demo + 文档)
+- `008-M2-OPS.md` — M2 备份恢复与 PostgreSQL 并发门禁
 
 ⚠️ **关键陷阱**:`005-INTEG` = v0.5 第 5 阶段集成,**不是产品 005**(产品 005 是 `005AI逆向Agent`)。同样 `005-UI` / `005-FINAL` 也是 stage 005 的子阶段。
 
@@ -40,8 +41,8 @@
 
 | 段 | 含义 | 取值 |
 |----|------|------|
-| `PRODUCT` | 产品 ID 短名 | `SOC` / `VULN` / `LAB` / `CODE` / `REV` / `FW` / `INTEG` / `UI` / `DEPLOY` / `E2E` / `DOC` |
-| `ROLE` | ISSUE 类别 | `CLI` (CLI 契约) / `LIVE` (真实样本+集成) / `ADAPT` (adapter) / `RULE` (规则) / `PAGE` (页面) 等 |
+| `PRODUCT` | 产品 ID 短名 | `SOC` / `VULN` / `LAB` / `CODE` / `REV` / `FW` / `INTEG` / `UI` / `DEPLOY` / `E2E` / `OPS` / `DOC` |
+| `ROLE` | ISSUE 类别 | `CLI` / `LIVE` / `ADAPT` / `RULE` / `PAGE` / `BACKUP` / `CONCURRENCY` 等 |
 | `SEQ` | 同产品同类别内的 3 位序号 | `001` / `002` |
 
 **示例**(Week 11 v0.6 adapter 派活):
@@ -116,3 +117,4 @@ NITs: <optional, anything close-to-spec-but-not-exact>
 | Week 11 | `005-INTEG` + `001~006-S4/S5` | 集成层 + 6 个产品 v0.6 adapter |
 | Week 12 | `005-UI` | Web Dashboard |
 | Week 13 | `005-FINAL` | v1.0 收尾 |
+| M2 closure | `008-M2-OPS` | 备份恢复与真实 PostgreSQL 并发门禁 |

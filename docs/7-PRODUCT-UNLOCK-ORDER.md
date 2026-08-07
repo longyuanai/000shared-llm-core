@@ -1,5 +1,7 @@
 # 7 个产品 v0.5 升级 · 解锁顺序表
 
+> **历史快照**：本表所述 v0.5 解锁链已经全部完成。当前任务与依赖以 [`dispatches/INDEX.md`](dispatches/INDEX.md) 和根目录 `docs/current-status.md` 为准。
+
 > **前提**: 005-CONTRACT(§7-§10 实现)完工 = 唯一硬阻塞
 > **本表用途**: 005-CONTRACT 完工后,7 个产品派活的顺序、依赖、并行安排
 

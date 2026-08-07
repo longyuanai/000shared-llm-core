@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "generated_at": "2026-08-05-M2.1-closure",
-  "python_supported": ["3.11"],
-  "python_notes": "All seven Python packages pin python = \"^3.11\" in pyproject.toml. Windows hosts running pytest must use the absolute Python interpreter (C:\\\\Users\\\\<user>\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python311\\\\python.exe) — bare `python` on Windows PATH can resolve to the Microsoft Store stub and surface as exit 49. Test invocations on Windows also need `--basetemp=C:/pytest-tmp/ -o addopts=` (see CLAUDE.md §3.1, §3.2).",
+  "generated_at": "2026-08-07-M2-ops",
+  "python_supported": ["3.11", "3.12"],
+  "python_notes": "All seven Python packages declare python = \"^3.11\". Suite CI validates Python 3.12. Windows hosts must use the configured absolute interpreter — the current workstation uses C:\\\\Users\\\\15072\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python314\\\\python.exe for local verification — because bare `python` can resolve to the Microsoft Store stub. Test invocations on Windows also need `--basetemp=C:/pytest-tmp/ -o addopts=` (see AGENTS.md §3.1, §3.2).",
   "node_supported": ["22"],
   "repositories": [
     {
@@ -15,7 +15,7 @@
     {
       "key": "integration",
       "repository": "longyuanai/-000shared-integration",
-      "commit": "e551c1a8fda0bdb3092392a797437e221ac77d24",
+      "commit": "4001790ce7f7bb105d92880f25f7551b9beb78e3",
       "path": "000shared-integration",
       "install_path": "."
     },
@@ -64,7 +64,7 @@
     {
       "key": "web_ui",
       "repository": "longyuanai/web-ui",
-      "commit": "3f814afb9bf26d37f3fa9b7d175c7bd2e40d372f",
+      "commit": "e5a5274c6210df33b442686b31c5ce70130b4ae8",
       "path": "web-ui",
       "install_path": ".",
       "stack": "node",
