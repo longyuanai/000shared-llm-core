@@ -25,14 +25,6 @@ jobs:
     env:
       SUITE_DIR: ${{ github.workspace }}/suite
       PIP_DISABLE_PIP_VERSION_CHECK: "1"
-      INTEGRATION_REF: ${{ github.event.client_payload.integration_sha || 'e551c1a8fda0bdb3092392a797437e221ac77d24' }}
-      SOC_REF: ${{ github.event.client_payload.soc_sha || 'accfdfd281ab6641a1b54389519e63c37d471233' }}
-      VULNERABILITY_REF: ${{ github.event.client_payload.vulnerability_sha || 'b3ce7e9fa457f3ca9ebfeaaf70691059c8b19b3e' }}
-      LAB_REF: ${{ github.event.client_payload.lab_sha || 'fa71e06e02c9c300c34d1ec49de1a1fad1ca8597' }}
-      CODE_REF: ${{ github.event.client_payload.code_sha || 'e500dab917ee0fe9b4c1dbbb725ba7a86c7d82b2' }}
-      REVERSE_REF: ${{ github.event.client_payload.reverse_sha || '72a474c6977ebe28203cb6b3ebb221ab3fa4607f' }}
-      FIRMWARE_REF: ${{ github.event.client_payload.firmware_sha || '25e6ca6f94df4ae863c696665a7cda9d7b0c0dc2' }}
-      WEB_UI_REF: ${{ github.event.client_payload.web_ui_sha || '3f814afb9bf26d37f3fa9b7d175c7bd2e40d372f' }}
 
     steps:
       - name: Check out shared core
@@ -40,11 +32,58 @@ jobs:
         with:
           path: suite/000shared-llm-core
 
+      - name: Resolve locked repository refs
+        id: suite_refs
+        shell: bash
+        env:
+          CLIENT_PAYLOAD: ${{ toJSON(github.event.client_payload) }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import pathlib
+          import re
+
+          suite = pathlib.Path(os.environ["SUITE_DIR"])
+          lock = json.loads((suite / "000shared-llm-core" / "suite-lock.yml").read_text())
+          payload = json.loads(os.environ.get("CLIENT_PAYLOAD") or "null") or {}
+          if not isinstance(payload, dict):
+              raise SystemExit("client payload must be an object")
+          mappings = {
+              "integration": ("integration_ref", "integration_sha"),
+              "soc": ("soc_ref", "soc_sha"),
+              "vulnerability": ("vulnerability_ref", "vulnerability_sha"),
+              "lab": ("lab_ref", "lab_sha"),
+              "code": ("code_ref", "code_sha"),
+              "reverse": ("reverse_ref", "reverse_sha"),
+              "firmware": ("firmware_ref", "firmware_sha"),
+              "web_ui": ("web_ui_ref", "web_ui_sha"),
+          }
+          entries = {entry["key"]: entry for entry in lock["repositories"]}
+          errors = []
+          resolved = {}
+          for key, (env_name, payload_name) in mappings.items():
+              if key not in entries:
+                  errors.append(f"suite lock is missing {key}")
+                  continue
+              value = payload.get(payload_name) or entries[key]["commit"]
+              if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{40}", value):
+                  errors.append(f"{key}: ref must be a full lowercase commit SHA")
+                  continue
+              resolved[env_name] = value
+          if errors:
+              raise SystemExit("\n".join(errors))
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output_file:
+              for output_name, value in resolved.items():
+                  output_file.write(f"{output_name}={value}\n")
+          print(f"Resolved {len(resolved)} refs from suite-lock.yml/payload")
+          PY
+
       - name: Check out integration gateway
         uses: actions/checkout@v7
         with:
           repository: longyuanai/-000shared-integration
-          ref: ${{ env.INTEGRATION_REF }}
+          ref: ${{ steps.suite_refs.outputs.integration_ref }}
           path: suite/000shared-integration
           token: ${{ secrets.SUITE_READ_TOKEN || github.token }}
 
@@ -52,7 +91,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: longyuanai/-001AI-SOC-Agent
-          ref: ${{ env.SOC_REF }}
+          ref: ${{ steps.suite_refs.outputs.soc_ref }}
           path: suite/001AI-SOC-Agent
           token: ${{ secrets.SUITE_READ_TOKEN || github.token }}
 
@@ -60,7 +99,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: longyuanai/002AI-Vulnerability-Agent
-          ref: ${{ env.VULNERABILITY_REF }}
+          ref: ${{ steps.suite_refs.outputs.vulnerability_ref }}
           path: suite/002AI-Vulnerability-Agent
           token: ${{ secrets.SUITE_READ_TOKEN || github.token }}
 
@@ -68,7 +107,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: longyuanai/003AI-Agent-Security-Lab
-          ref: ${{ env.LAB_REF }}
+          ref: ${{ steps.suite_refs.outputs.lab_ref }}
           path: "suite/003AI Agent安全靶场"
           token: ${{ secrets.SUITE_READ_TOKEN || github.token }}
 
@@ -76,7 +115,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: longyuanai/004AI-Code-Audit
-          ref: ${{ env.CODE_REF }}
+          ref: ${{ steps.suite_refs.outputs.code_ref }}
           path: suite/004AI-Code-Audit
           token: ${{ secrets.SUITE_READ_TOKEN || github.token }}
 
@@ -84,7 +123,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: longyuanai/005AI-Reverse-Agent
-          ref: ${{ env.REVERSE_REF }}
+          ref: ${{ steps.suite_refs.outputs.reverse_ref }}
           path: suite/005AI-Reverse-Agent
           token: ${{ secrets.SUITE_READ_TOKEN || github.token }}
 
@@ -92,7 +131,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: longyuanai/006AI-Firmware-Security-Agent
-          ref: ${{ env.FIRMWARE_REF }}
+          ref: ${{ steps.suite_refs.outputs.firmware_ref }}
           path: suite/006AI-Firmware-Security-Agent
           token: ${{ secrets.SUITE_READ_TOKEN || github.token }}
 
@@ -100,7 +139,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: longyuanai/web-ui
-          ref: ${{ env.WEB_UI_REF }}
+          ref: ${{ steps.suite_refs.outputs.web_ui_ref }}
           path: suite/web-ui
           token: ${{ secrets.SUITE_READ_TOKEN || github.token }}
 
@@ -108,6 +147,14 @@ jobs:
         shell: bash
         env:
           EVENT_NAME: ${{ github.event_name }}
+          INTEGRATION_REF: ${{ steps.suite_refs.outputs.integration_ref }}
+          SOC_REF: ${{ steps.suite_refs.outputs.soc_ref }}
+          VULNERABILITY_REF: ${{ steps.suite_refs.outputs.vulnerability_ref }}
+          LAB_REF: ${{ steps.suite_refs.outputs.lab_ref }}
+          CODE_REF: ${{ steps.suite_refs.outputs.code_ref }}
+          REVERSE_REF: ${{ steps.suite_refs.outputs.reverse_ref }}
+          FIRMWARE_REF: ${{ steps.suite_refs.outputs.firmware_ref }}
+          WEB_UI_REF: ${{ steps.suite_refs.outputs.web_ui_ref }}
         run: |
           python - <<'PY'
           import json
