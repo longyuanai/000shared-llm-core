@@ -6,17 +6,19 @@
 
 | 顺序 | 派活 | 目标仓 | 状态 | 解锁条件 |
 |---|---|---|---|---|
-| 1 | [`009-M3-AUTH.md`](009-M3-AUTH.md) | Integration + Web | 🟡 执行中：`E2E-RBAC-001` | `AUTH-DATA-001`、`AUTH-HTTP-001`、`UI-SESSION-001` 已完成候选门禁 |
+| 1 | [`009-M3-AUTH.md`](009-M3-AUTH.md) | Integration + Web | 🟠 代码/文档门禁通过，最终锁定中 | 四个代码/E2E ISSUE 与 `DOC-AUTH-001` 已交付；Sites 发布待恢复访问 |
 
 `008-M2-OPS` 的本地备份/恢复、PostgreSQL 并发、seed 修复和全量测试已通过。初次 run
 `31188096745` 暴露 workflow 旧默认 SHA；core `e900a0a` 改为直接从 suite lock 解析 refs，
 替代 run `31267714152` 完成 9 仓锁校验与 `1873 passed, 5 skipped, 1 warning, 0 failed`。
 Integration 审计已升级为 PASS。
 
-M3 身份边界已固化为已接受的 [`ADR-003`](../adr/ADR-003-M3-BFF-identity-boundary.md)，
-`009-M3-AUTH` 已解锁。Integration 候选 `d87d194` 与 Web `UI-SESSION-001` 候选
-`05b38fa` 的组合 suite run `31274096138` 成功（`1908 passed, 7 skipped, 1 warning`）；
-下一步执行 `E2E-RBAC-001`，不得提前锁定 M3 最终 suite lock。
+M3 身份边界已固化为已接受的 [`ADR-003`](../adr/ADR-003-M3-BFF-identity-boundary.md)。
+Integration `15a905b`、Web `3dbc361` 与 Core `d41bfea` 的候选 suite run `31276172231`
+成功：八个 Python 组 `1914 passed, 7 skipped, 1 warning`，真实 PostgreSQL/Gateway/Web
+两轮各 `13 passed`。运维 Runbook 与 PASS-WITH-NITS 审计已进入 Integration `2d42a87`，
+Web 阶段文档为 `a778e0b`；当前更新精确 suite lock。剩余 nit 是恢复既有 Sites 项目访问并
+完成私有发布，不得新建替代项目覆盖事实源。
 
 ## 已完成派活
 
@@ -41,6 +43,7 @@ M3 身份边界已固化为已接受的 [`ADR-003`](../adr/ADR-003-M3-BFF-identi
 | [`007-CI.md`](007-CI.md) | suite CI | ✅ complete |
 | [`007-CI-FIX.md`](007-CI-FIX.md) | 发布后 CI 修复 | ✅ complete |
 | [`008-M2-OPS.md`](008-M2-OPS.md) | M2 备份、并发、seed 与发布门禁 | ✅ complete |
+| [`009-M3-AUTH.md`](009-M3-AUTH.md) | M3 身份、会话、多租户 RBAC 与发布文档 | ✅ candidate gate; Sites publish pending |
 
 历史 6-worker 并行包保留在 [`CODEX-DISPATCH-PACK-v0.6.md`](CODEX-DISPATCH-PACK-v0.6.md)，不再重复派发。
 
