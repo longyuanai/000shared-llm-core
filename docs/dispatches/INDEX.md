@@ -1,14 +1,22 @@
 # longyuanai 派活索引
 
-> 状态核验：2026-08-07。当前项目事实见仓库根目录 `docs/current-status.md`。
+> 状态核验：2026-08-09。当前项目事实见仓库根目录 `docs/current-status.md`。
 
 ## 当前交付门禁
 
 | 顺序 | 派活 | 目标仓 | 状态 | 解锁条件 |
 |---|---|---|---|---|
-| 1 | [`008-M2-OPS.md`](008-M2-OPS.md) | `000shared-integration` | 🟡 inputs pushed | 待 core suite-lock 提交与 CI |
+| 1 | [`008-M2-OPS.md`](008-M2-OPS.md) | `000shared-integration` | 🔴 CI 锁校验失败，修复待 rerun | 新 suite CI 全部通过 |
+| 2 | [`009-M3-AUTH.md`](009-M3-AUTH.md) | Integration + Web | 🔒 已设计、未解锁 | 008 审计升级为 PASS |
 
-`008-M2-OPS` 的本地备份/恢复、PostgreSQL 并发、seed 修复和全量测试已通过；Integration `4001790` 与 web-ui `e5a5274` 已推送，锁定 SHA 已写入 `suite-lock.yml`。远端 suite CI 通过后再起草 M3 OIDC/BFF、多租户 UI 等任务。
+`008-M2-OPS` 的本地备份/恢复、PostgreSQL 并发、seed 修复和全量测试已通过；
+Integration `4001790`、web-ui `e5a5274` 与 core `ffd75e6` 均已推送，锁定 SHA
+已写入 `suite-lock.yml`。suite CI run `31188096745` 已确认在“Verify locked repository set”
+失败：workflow 默认仍 checkout 旧 Integration/Web SHA，测试尚未开始。当前 workflow 修复
+改为从 suite lock 解析默认 refs；成功 rerun 前审计仍为 PASS-WITH-NITS。
+
+M3 身份边界已固化为 [`ADR-003`](../adr/ADR-003-M3-BFF-identity-boundary.md)，并起草
+`009-M3-AUTH`。该派活当前只供评审；不得绕过 008 远端门禁实施产品代码。
 
 ## 已完成派活
 
