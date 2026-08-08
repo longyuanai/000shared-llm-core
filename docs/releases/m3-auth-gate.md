@@ -1,6 +1,6 @@
 # M3 身份与多租户 RBAC 门禁记录
 
-> 状态：**候选通过，Sites 发布待恢复访问**
+> 状态：**精确锁定门禁通过，Sites 发布待恢复访问**
 > 日期：2026-08-09
 
 ## 锁定范围
@@ -24,6 +24,12 @@ Hosting/OIDC + PKCE、HttpOnly BFF 会话、同源代理、13 场景真实 RBAC 
   [`31276172231`](https://github.com/longyuanai/000shared-llm-core/actions/runs/31276172231)：
   8 个 Python 组 `1914 passed, 7 skipped, 1 warning`；真实 PostgreSQL + Gateway + Web
   两个独立 round 各 `13 passed`，每轮 fixture 与最终 Compose 资源清理成功。
+- 精确锁定 suite CI
+  [`31276779035`](https://github.com/longyuanai/000shared-llm-core/actions/runs/31276779035)：
+  core `60589387bebaa36c3a12873c90839dac4052ce47` 按 `suite-lock.yml` 检出 Integration
+  `2d42a8728b55a8a541d0f6d4ed23698fae23f15d` 与 Web
+  `a778e0b9c845083d41493f10653ccaa943839882`；九仓锁校验、八个 Python 组与真实浏览器
+  双轮门禁全部成功，两轮各 `13 passed`，最终容器和网络均已移除。
 - 本地 Integration：`139 passed, 4 skipped`；真实 PostgreSQL 16 专项 `4 passed`；Ruff 通过。
 - 生产依赖：`openid-client 6.8.4`、Next `16.3.0`；npm production audit 为 0。
 
