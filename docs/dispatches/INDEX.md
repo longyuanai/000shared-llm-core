@@ -6,7 +6,7 @@
 
 | 顺序 | 派活 | 目标仓 | 状态 | 解锁条件 |
 |---|---|---|---|---|
-| 1 | [`009-M3-AUTH.md`](009-M3-AUTH.md) | Integration + Web | 🟢 已解锁 | 按 ADR-003 与 ISSUE 顺序执行 |
+| 1 | [`009-M3-AUTH.md`](009-M3-AUTH.md) | Integration + Web | 🟡 执行中：`E2E-RBAC-001` | `AUTH-DATA-001`、`AUTH-HTTP-001`、`UI-SESSION-001` 已完成候选门禁 |
 
 `008-M2-OPS` 的本地备份/恢复、PostgreSQL 并发、seed 修复和全量测试已通过。初次 run
 `31188096745` 暴露 workflow 旧默认 SHA；core `e900a0a` 改为直接从 suite lock 解析 refs，
@@ -14,7 +14,9 @@
 Integration 审计已升级为 PASS。
 
 M3 身份边界已固化为已接受的 [`ADR-003`](../adr/ADR-003-M3-BFF-identity-boundary.md)，
-`009-M3-AUTH` 已解锁。
+`009-M3-AUTH` 已解锁。Integration 候选 `d87d194` 与 Web `UI-SESSION-001` 候选
+`05b38fa` 的组合 suite run `31274096138` 成功（`1908 passed, 7 skipped, 1 warning`）；
+下一步执行 `E2E-RBAC-001`，不得提前锁定 M3 最终 suite lock。
 
 ## 已完成派活
 
