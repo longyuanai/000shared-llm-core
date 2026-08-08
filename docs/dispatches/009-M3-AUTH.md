@@ -1,8 +1,8 @@
 # 009-M3-AUTH：BFF 身份交换与多租户 RBAC
 
-> **状态**：🔒 已设计、未解锁
-> **解锁条件**：锁定 SHA 解析修复后的新 suite CI 全部通过，并将
-> `000shared-integration/AUDIT/008-M2-OPS.md` 更新为 PASS。
+> **状态**：🟢 已解锁
+> **解锁证据**：suite CI run `31267714152` 成功，
+> `000shared-integration/AUDIT/008-M2-OPS.md` 已更新为 PASS。
 > **设计依据**：[`ADR-003`](../adr/ADR-003-M3-BFF-identity-boundary.md)
 
 ## 1. 目标
@@ -11,7 +11,7 @@
 同时保留现有机器 API Key 兼容性，并用真实 PostgreSQL、Gateway 和浏览器证明租户隔离与
 viewer/analyst/admin 权限。
 
-本派活未解锁前只允许评审文档，不得开始产品代码、迁移或依赖变更。
+执行前仍须检查两目标仓工作区，并按 ISSUE 顺序提交、验证和回报。
 
 ## 2. 范围与提交顺序
 

@@ -6,17 +6,15 @@
 
 | 顺序 | 派活 | 目标仓 | 状态 | 解锁条件 |
 |---|---|---|---|---|
-| 1 | [`008-M2-OPS.md`](008-M2-OPS.md) | `000shared-integration` | 🔴 CI 锁校验失败，修复待 rerun | 新 suite CI 全部通过 |
-| 2 | [`009-M3-AUTH.md`](009-M3-AUTH.md) | Integration + Web | 🔒 已设计、未解锁 | 008 审计升级为 PASS |
+| 1 | [`009-M3-AUTH.md`](009-M3-AUTH.md) | Integration + Web | 🟢 已解锁 | 按 ADR-003 与 ISSUE 顺序执行 |
 
-`008-M2-OPS` 的本地备份/恢复、PostgreSQL 并发、seed 修复和全量测试已通过；
-Integration `4001790`、web-ui `e5a5274` 与 core `ffd75e6` 均已推送，锁定 SHA
-已写入 `suite-lock.yml`。suite CI run `31188096745` 已确认在“Verify locked repository set”
-失败：workflow 默认仍 checkout 旧 Integration/Web SHA，测试尚未开始。当前 workflow 修复
-改为从 suite lock 解析默认 refs；成功 rerun 前审计仍为 PASS-WITH-NITS。
+`008-M2-OPS` 的本地备份/恢复、PostgreSQL 并发、seed 修复和全量测试已通过。初次 run
+`31188096745` 暴露 workflow 旧默认 SHA；core `e900a0a` 改为直接从 suite lock 解析 refs，
+替代 run `31267714152` 完成 9 仓锁校验与 `1873 passed, 5 skipped, 1 warning, 0 failed`。
+Integration 审计已升级为 PASS。
 
-M3 身份边界已固化为 [`ADR-003`](../adr/ADR-003-M3-BFF-identity-boundary.md)，并起草
-`009-M3-AUTH`。该派活当前只供评审；不得绕过 008 远端门禁实施产品代码。
+M3 身份边界已固化为已接受的 [`ADR-003`](../adr/ADR-003-M3-BFF-identity-boundary.md)，
+`009-M3-AUTH` 已解锁。
 
 ## 已完成派活
 
@@ -40,6 +38,7 @@ M3 身份边界已固化为 [`ADR-003`](../adr/ADR-003-M3-BFF-identity-boundary.
 | [`005-FINAL.md`](005-FINAL.md) | v0.5 freeze / E2E / docs | ✅ complete |
 | [`007-CI.md`](007-CI.md) | suite CI | ✅ complete |
 | [`007-CI-FIX.md`](007-CI-FIX.md) | 发布后 CI 修复 | ✅ complete |
+| [`008-M2-OPS.md`](008-M2-OPS.md) | M2 备份、并发、seed 与发布门禁 | ✅ complete |
 
 历史 6-worker 并行包保留在 [`CODEX-DISPATCH-PACK-v0.6.md`](CODEX-DISPATCH-PACK-v0.6.md)，不再重复派发。
 

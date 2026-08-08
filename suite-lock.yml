@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generated_at": "2026-08-07-M2-ops",
+  "generated_at": "2026-08-09-M2-ops-pass",
   "python_supported": ["3.11", "3.12"],
   "python_notes": "All seven Python packages declare python = \"^3.11\". Suite CI validates Python 3.12. Windows hosts must use the configured absolute interpreter — the current workstation uses C:\\\\Users\\\\15072\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python314\\\\python.exe for local verification — because bare `python` can resolve to the Microsoft Store stub. Test invocations on Windows also need `--basetemp=C:/pytest-tmp/ -o addopts=` (see AGENTS.md §3.1, §3.2).",
   "node_supported": ["22"],
@@ -15,7 +15,7 @@
     {
       "key": "integration",
       "repository": "longyuanai/-000shared-integration",
-      "commit": "4001790ce7f7bb105d92880f25f7551b9beb78e3",
+      "commit": "fc272aa4def2815ebc7d8ef99f7e3e6864d6c660",
       "path": "000shared-integration",
       "install_path": "."
     },
@@ -64,7 +64,7 @@
     {
       "key": "web_ui",
       "repository": "longyuanai/web-ui",
-      "commit": "e5a5274c6210df33b442686b31c5ce70130b4ae8",
+      "commit": "31ddd60c2d1bab124ca9c61fe1f857be5ad23fa3",
       "path": "web-ui",
       "install_path": ".",
       "stack": "node",

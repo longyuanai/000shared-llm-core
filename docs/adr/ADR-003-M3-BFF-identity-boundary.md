@@ -1,10 +1,10 @@
 # ADR-003 · M3 BFF 身份交换与租户授权边界
 
-**状态**: 候选；`008-M2-OPS` 成功 rerun 后接受并解锁实施
+**状态**: 接受
 **日期**: 2026-08-09
 **决策方**: longyuanai 设计/审计层
 **关联派活**: `docs/dispatches/009-M3-AUTH.md`
-**前置门禁**: run `31188096745` 的锁定 SHA 解析缺陷修复后，新 suite CI 全部通过
+**前置门禁**: 已满足；suite CI run `31267714152` 成功
 
 ---
 
@@ -150,5 +150,6 @@ BFF 的 same-origin API route 必须移除浏览器传入的 `Authorization`、�
 
 ## 解锁规则
 
-本 ADR 当前只授权设计与派活，不授权产品实现。锁定 SHA 解析修复后的新 suite CI 全部
-通过后，将本 ADR 状态改为“接受”，把 `009-M3-AUTH` 标为已解锁，再交给执行层。
+suite CI run `31267714152` 已在 core `b0b4c745ada67991929301456154775181da212f`
+上成功：9 仓锁校验通过，8 个 Python 测试组共 `1873 passed, 5 skipped, 1 warning,
+0 failed`。本 ADR 因此转为“接受”，`009-M3-AUTH` 已解锁，可交给执行层。
