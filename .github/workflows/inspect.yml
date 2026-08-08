@@ -21,7 +21,7 @@ jobs:
   test-suite:
     name: Test nine-repository suite
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     env:
       SUITE_DIR: ${{ github.workspace }}/suite
       PIP_DISABLE_PIP_VERSION_CHECK: "1"
@@ -270,6 +270,42 @@ jobs:
             echo "::endgroup::"
           done
 
+      - name: Set up Node.js for browser RBAC gate
+        if: ${{ hashFiles('suite/web-ui/scripts/run-rbac-e2e.mjs') != '' }}
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: suite/web-ui/package-lock.json
+
+      - name: Install Web dependencies
+        if: ${{ hashFiles('suite/web-ui/scripts/run-rbac-e2e.mjs') != '' }}
+        working-directory: suite/web-ui
+        run: npm ci
+
+      - name: Install Chromium for browser RBAC gate
+        if: ${{ hashFiles('suite/web-ui/scripts/run-rbac-e2e.mjs') != '' }}
+        working-directory: suite/web-ui
+        run: npx playwright install --with-deps chromium
+
+      - name: Run two-round PostgreSQL + Gateway + Web RBAC gate
+        if: ${{ hashFiles('suite/web-ui/scripts/run-rbac-e2e.mjs') != '' }}
+        working-directory: suite/web-ui
+        env:
+          CI: "true"
+        run: npm run test:e2e:rbac
+
+      - name: Upload browser RBAC diagnostics
+        if: ${{ always() && hashFiles('suite/web-ui/test-results/**') != '' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: browser-rbac-diagnostics
+          path: |
+            suite/web-ui/test-results
+            suite/web-ui/playwright-report
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Publish suite summary
         if: always()
         shell: bash
@@ -278,6 +314,9 @@ jobs:
             echo "## Multi-repository suite"
             echo
             echo "- Core + integration gateway + six product repositories"
+            if [ -f "$SUITE_DIR/web-ui/scripts/run-rbac-e2e.mjs" ]; then
+              echo "- Real PostgreSQL + Gateway + Web RBAC: two isolated Playwright rounds"
+            fi
             echo "- Python 3.12 on Ubuntu"
             echo "- Triggered by: \`${{ github.event_name }}\`"
           } >> "$GITHUB_STEP_SUMMARY"
