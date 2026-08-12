@@ -224,6 +224,40 @@ shared-integration-admin api-key-list  --tenant <t>
 - fixture 与测试数据中不得出现真实主机名、IP、CVE 之外的客户标识或任何凭据
 - 每个 ISSUE 独立 commit，不合并提交，不造空 commit
 
+### 4.1 环境事实（2026-08-12 核实，直接用，不要自己猜）
+
+绝对 Python：`C:\Users\15072\AppData\Local\Programs\Python\Python314\python.exe`
+
+| 仓 | `PYTHONPATH`（Windows 用 `;` 分隔） |
+|---|---|
+| `000shared-llm-core` | `src` |
+| `000shared-integration` | `src;../000shared-llm-core/src` |
+| `001AI-SOC-Agent` | `src;../000shared-llm-core/src` |
+| `002AI-Vulnerability-Agent` | `src;../000shared-llm-core/src` |
+| `004AI-Code-Audit/004AI-CodeGuard-upgrade` | `src;../../000shared-llm-core/src;.python-deps` |
+
+`004` 的实际 Git 仓是 `004AI-Code-Audit/004AI-CodeGuard-upgrade`，外层
+`004AI-Code-Audit/` 只是本地容器目录，**不是仓库**。该仓的 `.python-deps/` 存在且
+装着 tree-sitter 系列，漏了它 import 会失败。
+
+CLI 入口（用于 smoke）：
+
+| 仓 | 调用方式 |
+|---|---|
+| `001AI-SOC-Agent` | `python -m ai_soc_agent`（**该仓 `pyproject.toml` 没有 `[tool.poetry.scripts]`；README 里的 `ai-soc` 未注册，不要用**） |
+| `002AI-Vulnerability-Agent` | `ai-vuln` |
+| `004AI-CodeGuard-upgrade` | `ai-code-audit` |
+| `000shared-integration` | `shared-integration` / `shared-integration-admin` |
+
+`evals/` 目录当前在所有仓中都不存在，属于本阶段新建。
+
+### 4.2 回归基线
+
+**动工前**先在每个目标仓跑一次全量 `pytest tests/` 并把数字记进回报的
+`baseline:` 字段；完工后的数字**只允许增加，不允许减少**。不要依赖本文档硬编码
+基线数字 —— 它会过期。已知参考：`000shared-llm-core` 在 2026-08-12 为
+`105 passed`。
+
 ## 5. 本阶段**不做**的事（已知缺口，后续阶段）
 
 以下缺口在 2026-08-12 架构审查中确认存在，但**需要先有 ADR 或不适合与本阶段混做**：
@@ -245,9 +279,22 @@ shared-integration-admin api-key-list  --tenant <t>
 ISSUE: <ID>
 commit: <hash>
 files: <touched files>
+baseline: <动工前该仓 pytest tests/ 的数字>
 tests: <N> passed, <M> failed
 verify: <验收命令的 stdout>
 NITs: <可选>
 ```
 
 CORE-EVAL-002 额外要求贴出"故意改坏 fixture 后门禁变红"的输出。
+
+## 7. 卡住时怎么办
+
+派活文档是契约。遇到下列情况**停下来问，不要自由发挥**：
+
+- 需要改 v0.1 / v0.5 §7–§10 的对外签名才能实现
+- 某个 ISSUE 的验收条件在当前代码结构下无法满足
+- 发现受保护仓（`003AI Agent安全靶场`）的文件必须改动
+- 录制 fixture 时发现需要真实凭据或真实客户数据
+- 本文档 §4.1 的环境事实与你实际看到的不符
+
+把问题写进当前 ISSUE 回报的 `Open questions:` 段，先做不受阻塞的其他 ISSUE。
