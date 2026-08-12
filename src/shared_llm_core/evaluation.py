@@ -142,9 +142,13 @@ def _field_value(output: Mapping[str, Any], dotted_name: str) -> tuple[bool, Any
 def _check_severity(
     output: Mapping[str, Any], rule: Mapping[str, Any], deviations: list[str]
 ) -> None:
-    if "severity" not in output:
+    field = rule.get("field", "severity")
+    if not isinstance(field, str):
+        deviations.append("expected.severity.field must be a field name")
         return
-    severity = output["severity"]
+    present, severity = _field_value(output, field)
+    if not present:
+        return
     allowed = rule.get("allowed", _SEVERITY_ORDER)
     if not isinstance(allowed, (list, tuple)) or not all(isinstance(v, str) for v in allowed):
         deviations.append("expected.severity.allowed must be a list of strings")
@@ -173,9 +177,13 @@ def _check_severity(
 def _check_confidence(
     output: Mapping[str, Any], rule: Mapping[str, Any], deviations: list[str]
 ) -> None:
-    if "confidence" not in output:
+    field = rule.get("field", "confidence")
+    if not isinstance(field, str):
+        deviations.append("expected.confidence.field must be a field name")
         return
-    value = output["confidence"]
+    present, value = _field_value(output, field)
+    if not present:
+        return
     minimum = rule.get("min", 0.0)
     maximum = rule.get("max", 1.0)
     if (

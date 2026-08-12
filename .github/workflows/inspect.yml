@@ -240,6 +240,26 @@ jobs:
             jsonschema \
             yara-python
 
+      - name: Run LLM evaluation gates
+        shell: bash
+        env:
+          SHARED_LLM_EVAL_MODE: replay
+        run: |
+          set -euo pipefail
+          for path in \
+            "$SUITE_DIR/001AI-SOC-Agent" \
+            "$SUITE_DIR/002AI-Vulnerability-Agent"
+          do
+            (
+              cd "$path"
+              python -m pytest tests/test_eval_gate.py \
+                --basetemp="$RUNNER_TEMP/pytest-eval-$(basename "$path")" \
+                -o addopts= \
+                -p no:cacheprovider \
+                -q
+            )
+          done
+
       - name: Run all test suites
         shell: bash
         run: |
