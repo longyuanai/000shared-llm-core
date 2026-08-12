@@ -42,7 +42,10 @@
 
 | 段 | 含义 | 取值 |
 |----|------|------|
-| `PRODUCT` | 产品 ID 短名 | `SOC` / `VULN` / `LAB` / `CODE` / `REV` / `FW` / `INTEG` / `UI` / `DEPLOY` / `E2E` / `OPS` / `DOC` |
+| `PRODUCT` | 产品 ID 短名 | `CORE` / `SOC` / `VULN` / `LAB` / `CODE` / `REV` / `FW` / `INTEG` / `UI` / `DEPLOY` / `E2E` / `OPS` / `DOC` |
+
+> `CORE` 于 `010-AI-TRUST` 引入，指 `000shared-llm-core` 自身的能力新增（此前 core 的
+> 改动都挂在 `005-CONTRACT` 这类阶段码下，没有独立 PRODUCT 段）。
 | `ROLE` | ISSUE 类别 | `CLI` / `LIVE` / `ADAPT` / `RULE` / `PAGE` / `BACKUP` / `CONCURRENCY` 等 |
 | `SEQ` | 同产品同类别内的 3 位序号 | `001` / `002` |
 
@@ -120,3 +123,4 @@ NITs: <optional, anything close-to-spec-but-not-exact>
 | Week 13 | `005-FINAL` | v1.0 收尾 |
 | M2 closure | `008-M2-OPS` | 备份恢复与真实 PostgreSQL 并发门禁 |
 | M3 identity | `009-M3-AUTH` | BFF 身份交换、短时用户会话与多租户 RBAC |
+| AI trust | `010-AI-TRUST` | LLM 输出评估门禁、不可信内容边界与 key 列举命令 |
