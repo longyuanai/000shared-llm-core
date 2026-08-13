@@ -63,7 +63,11 @@ EvalResult(case_id='soc-brute-force', passed=False,
 | `000shared-integration` | **143 passed, 4 skipped** | 无下降 |
 | `001AI-SOC-Agent` | **278 passed** | 无下降 |
 | `002AI-Vulnerability-Agent` | **180 passed** | 无下降 |
-| `004AI-CodeGuard-upgrade` | **178 passed, 1 failed** | 该失败为既有问题，见 NIT-3 |
+| `004AI-CodeGuard-upgrade` | **179 passed** | 无下降 |
+
+> 首轮审计在 001 与 004 各看到 1 个失败，一度记为 NIT-2 / NIT-3。复查确认两者都是
+> **审计员自己的 PYTHONPATH 用了相对路径**所致，与交付无关。改用绝对路径后
+> **五个仓全绿、零失败**。详见 NIT-2。
 
 受保护仓 `003AI Agent安全靶场`：HEAD 仍为 `3862acf`，仍是 7 个已修改 + 1 个未跟踪，
 **未被触碰** ✅
@@ -104,30 +108,38 @@ wrap_untrusted(..., kind="log_event") 输出：与输入逐字节相同
 始终包裹并转义，由调用方自行避免重复包裹；或在包裹时写入调用方无法伪造的随机
 nonce 作为定界符标识。二选一需要先确认没有依赖当前幂等语义的调用方。
 
-### NIT-2 · 派活 §4.1 的 PYTHONPATH 表不完整（审计员自身缺陷）
+### NIT-2 · 派活 §4.1 的 PYTHONPATH 必须用绝对路径（审计员自身缺陷）
 
-`001AI-SOC-Agent/tests/test_cli_envelope.py` 会派生子进程加载
-`shared_integration.adapters.worker`。按派活 §4.1 给出的
-`src;../000shared-llm-core/src` 执行会得到：
+产品仓的若干测试会派生子进程加载 `shared_integration.adapters.worker`。子进程的工作
+目录与 pytest 不同，**PYTHONPATH 里的相对路径在子进程中解析失败**：
 
 ```
 ModuleNotFoundError: No module named 'shared_integration'
-FAILED tests/test_cli_envelope.py::test_json_subprocess_adapter_runs_soc_cli_end_to_end
 ```
 
-补上 `../000shared-integration/src` 后 **278 passed**。该表由审计层编写，错误由审计层
-承担，已在本次审计同步修正。若执行层曾因此看到 1 个失败，属误报。
+这一个根因产生了两种表现：
 
-### NIT-3 · 004 `test_post_scan_returns_findings` 既有失败（超出本阶段范围）
+| 表现 | 触发条件 |
+|---|---|
+| `001` `test_cli_envelope.py` 失败 | PYTHONPATH 完全没有 integration 的 src |
+| `004` `test_code_adapter_e2e.py` 返回 500 | PYTHONPATH 有 integration 的 src，但写成相对路径 |
 
-```
-assert response.status_code == 200
-E  assert 500 == 200
-```
+第二种更隐蔽：适配器把子进程的启动失败包装成 `ProductCLIError`，再由 Gateway 转成
+HTTP 500，表面上像是被测服务出错。真实堆栈末端才是
+`ModuleNotFoundError: No module named 'shared_integration'`。
 
-在 `HEAD~1`（本阶段改动之前）同样失败，**确认非本阶段引入**。但这说明 004 的测试
-套件在本阶段开工前就是红的，且此前没有被记录。建议单开 ISSUE 处理，不阻塞本阶段
-验收。
+改为全绝对路径后：**001 = 278 passed，004 = 179 passed，零失败。**
+
+该表由审计层编写，错误由审计层承担，已在本次审计同步修正为绝对路径写法。执行层若
+因此看到失败，属误报，不计入交付质量。
+
+### NIT-3 · 已撤回
+
+首轮审计把 004 的 `test_post_scan_returns_findings` 记为"既有代码失败"，依据是它在
+`HEAD~1` 同样失败。该推理有缺陷：`HEAD~1` 的复现同样在错误的 PYTHONPATH 下进行，
+因此两次都失败只能证明与本阶段改动无关，**不能证明是代码缺陷**。
+
+改用绝对 PYTHONPATH 后该测试通过。**004 不存在既有失败，NIT-3 撤回。**
 
 ## 6. 结论与后续
 
@@ -135,11 +147,16 @@ E  assert 500 == 200
 保护、产品自身注入面）已实质性关闭：门禁经独立验证具备阻断能力，注入边界已在注入面
 最大的两个产品落地且测试方式正确。
 
+五个仓在正确环境下全部零失败，交付本身没有回归。唯一属于交付的问题是 NIT-1，且其
+成因是派活规格的盲区而非实现草率。
+
 放行下一阶段前必须处理：
 
 1. **NIT-1** 必须在 002 / 005 / 006 接入 `wrap_untrusted` 之前修复 —— 它们未必会
-   先做 JSON 序列化，届时绕过将变为可利用。
-2. **NIT-2** 已修正派活文档。
-3. **NIT-3** 另开 ISSUE。
+   先做 JSON 序列化，届时绕过将变为可利用。已写入 `011-INJECT-HARDEN`。
+2. **NIT-2** 已修正派活文档为绝对路径写法。建议同步补进根目录 `CLAUDE.md` §3.3 —— 
+   该文件目前记的仍是相对路径写法，是这次两处误判的源头。按 `CLAUDE.md` §9，改动
+   需同时在 `docs/current-status.md` 记录原因，故留待决策层确认。
+3. ~~NIT-3~~ 已撤回，不需要 ISSUE。
 
 本阶段不涉及推送；五个仓的提交均在本地。

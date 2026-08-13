@@ -231,16 +231,24 @@ shared-integration-admin api-key-list  --tenant <t>
 | 仓 | `PYTHONPATH`（Windows 用 `;` 分隔） |
 |---|---|
 | `000shared-llm-core` | `src` |
-| `000shared-integration` | `src;../000shared-llm-core/src` |
-| `001AI-SOC-Agent` | `src;../000shared-llm-core/src;../000shared-integration/src` |
-| `002AI-Vulnerability-Agent` | `src;../000shared-llm-core/src;../000shared-integration/src` |
-| `004AI-Code-Audit/004AI-CodeGuard-upgrade` | `src;../../000shared-llm-core/src;../../000shared-integration/src;.python-deps` |
+**必须全部使用绝对路径。** 设 `R = E:/001项目/000开发/003AI-Network-Security`：
 
-> 产品仓的 `tests/test_cli_envelope.py` 会派生子进程加载
-> `shared_integration.adapters.worker`，因此**产品仓也需要 integration 的 `src`**。
-> 缺了它会得到 `ModuleNotFoundError: No module named 'shared_integration'`，表现为
-> 一个 CLI envelope 测试失败 —— 这是环境配置问题，不是被测代码的缺陷。
-> （2026-08-13 审计修正：本表初版漏掉了这一列。）
+| 仓 | `PYTHONPATH`（Windows 用 `;` 分隔） |
+|---|---|
+| `000shared-integration` | `$R/000shared-integration/src;$R/000shared-llm-core/src` |
+| `001AI-SOC-Agent` | `$R/001AI-SOC-Agent/src;$R/000shared-llm-core/src;$R/000shared-integration/src` |
+| `002AI-Vulnerability-Agent` | `$R/002AI-Vulnerability-Agent/src;$R/000shared-llm-core/src;$R/000shared-integration/src` |
+| `004AI-Code-Audit/004AI-CodeGuard-upgrade` | `$R/004AI-Code-Audit/004AI-CodeGuard-upgrade/src;$R/000shared-llm-core/src;$R/000shared-integration/src;$R/004AI-Code-Audit/004AI-CodeGuard-upgrade/.python-deps` |
+
+> **为什么必须绝对**（2026-08-13 审计踩坑，代价是两处误判）：产品仓的若干测试会派生
+> 子进程加载 `shared_integration.adapters.worker`，子进程的工作目录与 pytest 不同，
+> 相对路径在其中解析失败。两种表现：
+>
+> - 完全缺 integration 的 src → `test_cli_envelope.py` 直接 `ModuleNotFoundError`
+> - 有但写成相对路径 → 适配器把子进程启动失败包成 `ProductCLIError`，Gateway 再转成
+>   **HTTP 500**，看起来像被测服务出错，真实原因藏在堆栈末端
+>
+> 第二种极易被误判为产品代码缺陷。全绝对路径下 001 = 278 passed、004 = 179 passed。
 
 `004` 的实际 Git 仓是 `004AI-Code-Audit/004AI-CodeGuard-upgrade`，外层
 `004AI-Code-Audit/` 只是本地容器目录，**不是仓库**。该仓的 `.python-deps/` 存在且

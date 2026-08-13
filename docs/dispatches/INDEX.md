@@ -49,7 +49,8 @@ Web 阶段文档为 `a778e0b`，并已写入精确 suite lock。剩余 nit 是�
 | [`007-CI-FIX.md`](007-CI-FIX.md) | 发布后 CI 修复 | ✅ complete |
 | [`008-M2-OPS.md`](008-M2-OPS.md) | M2 备份、并发、seed 与发布门禁 | ✅ complete |
 | [`009-M3-AUTH.md`](009-M3-AUTH.md) | M3 身份、会话、多租户 RBAC 与发布文档 | ✅ locked gate; Sites publish pending |
-| [`010-AI-TRUST.md`](010-AI-TRUST.md) | LLM 输出评估门禁、不可信内容边界、`api-key-list` | 🟢 已解锁，未开工 |
+| [`010-AI-TRUST.md`](010-AI-TRUST.md) | LLM 输出评估门禁、不可信内容边界、`api-key-list` | ✅ PASS-WITH-NITS（[审计](../../AUDIT/010-AI-TRUST.md)）|
+| [`011-INJECT-HARDEN.md`](011-INJECT-HARDEN.md) | 修复 `wrap_untrusted` 幂等绕过（010 NIT-1）| 🟢 已解锁，未开工 |
 
 历史 6-worker 并行包保留在 [`CODEX-DISPATCH-PACK-v0.6.md`](CODEX-DISPATCH-PACK-v0.6.md)，不再重复派发。
 
