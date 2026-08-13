@@ -248,7 +248,10 @@ jobs:
           set -euo pipefail
           for path in \
             "$SUITE_DIR/001AI-SOC-Agent" \
-            "$SUITE_DIR/002AI-Vulnerability-Agent"
+            "$SUITE_DIR/002AI-Vulnerability-Agent" \
+            "$SUITE_DIR/004AI-Code-Audit" \
+            "$SUITE_DIR/005AI-Reverse-Agent" \
+            "$SUITE_DIR/006AI-Firmware-Security-Agent"
           do
             (
               cd "$path"
