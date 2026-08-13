@@ -232,9 +232,15 @@ shared-integration-admin api-key-list  --tenant <t>
 |---|---|
 | `000shared-llm-core` | `src` |
 | `000shared-integration` | `src;../000shared-llm-core/src` |
-| `001AI-SOC-Agent` | `src;../000shared-llm-core/src` |
-| `002AI-Vulnerability-Agent` | `src;../000shared-llm-core/src` |
-| `004AI-Code-Audit/004AI-CodeGuard-upgrade` | `src;../../000shared-llm-core/src;.python-deps` |
+| `001AI-SOC-Agent` | `src;../000shared-llm-core/src;../000shared-integration/src` |
+| `002AI-Vulnerability-Agent` | `src;../000shared-llm-core/src;../000shared-integration/src` |
+| `004AI-Code-Audit/004AI-CodeGuard-upgrade` | `src;../../000shared-llm-core/src;../../000shared-integration/src;.python-deps` |
+
+> 产品仓的 `tests/test_cli_envelope.py` 会派生子进程加载
+> `shared_integration.adapters.worker`，因此**产品仓也需要 integration 的 `src`**。
+> 缺了它会得到 `ModuleNotFoundError: No module named 'shared_integration'`，表现为
+> 一个 CLI envelope 测试失败 —— 这是环境配置问题，不是被测代码的缺陷。
+> （2026-08-13 审计修正：本表初版漏掉了这一列。）
 
 `004` 的实际 Git 仓是 `004AI-Code-Audit/004AI-CodeGuard-upgrade`，外层
 `004AI-Code-Audit/` 只是本地容器目录，**不是仓库**。该仓的 `.python-deps/` 存在且
