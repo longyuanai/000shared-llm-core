@@ -8,9 +8,6 @@ import unicodedata
 _OPEN = '<UNTRUSTED_DATA kind="{kind}">'
 _CLOSE = "</UNTRUSTED_DATA>"
 _KIND = re.compile(r"[A-Za-z0-9_.-]+\Z")
-_WRAPPED = re.compile(
-    r'\A<UNTRUSTED_DATA kind="[A-Za-z0-9_.-]+">[\s\S]*</UNTRUSTED_DATA>\Z'
-)
 _ANSI_CSI = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
 _ANSI_OSC = re.compile(r"\x1b\][^\x07]*(?:\x07|\x1b\\)")
 
@@ -37,16 +34,15 @@ def scrub_control_sequences(content: str) -> str:
 def wrap_untrusted(content: str, *, kind: str) -> str:
     """Scrub and delimit content so a prompt can identify it as data.
 
-    Applying the function to an already wrapped value returns that value
-    unchanged. Delimiter-like text inside raw evidence is entity-neutralised so
-    it cannot close the outer boundary or create a nested trusted-looking block.
+    This function is intentionally not idempotent: every call adds a fresh outer
+    boundary and entity-neutralises delimiter-like text in the supplied value.
+    Unconditional wrapping prevents attacker-shaped evidence from being mistaken
+    for a boundary previously created by this function.
     """
 
     if not isinstance(kind, str) or _KIND.fullmatch(kind) is None:
         raise ValueError("kind must contain only letters, numbers, '.', '_' or '-'")
     cleaned = scrub_control_sequences(content)
-    if _WRAPPED.fullmatch(cleaned) is not None:
-        return cleaned
     cleaned = cleaned.replace("<UNTRUSTED_DATA", "&lt;UNTRUSTED_DATA")
     cleaned = cleaned.replace("</UNTRUSTED_DATA>", "&lt;/UNTRUSTED_DATA&gt;")
     return f"{_OPEN.format(kind=kind)}\n{cleaned}\n{_CLOSE}"
