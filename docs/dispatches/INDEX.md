@@ -51,6 +51,7 @@ Web 阶段文档为 `a778e0b`，并已写入精确 suite lock。剩余 nit 是�
 | [`009-M3-AUTH.md`](009-M3-AUTH.md) | M3 身份、会话、多租户 RBAC 与发布文档 | ✅ locked gate; Sites publish pending |
 | [`010-AI-TRUST.md`](010-AI-TRUST.md) | LLM 输出评估门禁、不可信内容边界、`api-key-list` | ✅ PASS-WITH-NITS（[审计](../../AUDIT/010-AI-TRUST.md)）|
 | [`011-INJECT-HARDEN.md`](011-INJECT-HARDEN.md) | 边界加固 + 六产品铺开边界与评估门禁（含 010 NIT-1）| ✅ PASS（[审计](../../AUDIT/011-INJECT-HARDEN.md)）|
+| [`012-STRUCT-DEBT.md`](012-STRUCT-DEBT.md) | 004 包树合并、套件版本策略、003 评估门禁、001 Elastic 接入 | 🟢 已解锁，ISSUE 4 待授权 |
 
 历史 6-worker 并行包保留在 [`CODEX-DISPATCH-PACK-v0.6.md`](CODEX-DISPATCH-PACK-v0.6.md)，不再重复派发。
 
