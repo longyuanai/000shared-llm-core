@@ -31,7 +31,7 @@ from shared_llm_core.multi_agent import (
 from shared_llm_core.rule_engine import Rule, RuleContext, RuleEngine, RuleRegistry
 from shared_llm_core.rules import BruteForceRule, KnownCVERule
 
-__version__ = "0.5.0"
+__version__ = "0.6.0"
 
 __all__ = [
     # v0.1 (frozen)

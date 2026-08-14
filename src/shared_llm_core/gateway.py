@@ -184,7 +184,7 @@ class IntegrationGateway:
 
     @property
     def app(self) -> FastAPI:
-        app = FastAPI(title="shared-llm-core IntegrationGateway", version="0.5.0")
+        app = FastAPI(title="shared-llm-core IntegrationGateway", version="0.6.0")
         gw = self
 
         @app.get("/v0.5/health")

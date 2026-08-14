@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "shared-llm-core"
-version = "0.1.0"
+version = "0.6.0"
 description = "OpenAI-compatible LLM Gateway for longyuanai AI Security Agent suite"
 authors = ["longyuanai"]
 license = "MIT"
