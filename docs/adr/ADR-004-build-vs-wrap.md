@@ -84,8 +84,16 @@ LLM 分析层。
 - **不得**把 EMBA 打进任何我们分发的镜像、安装包或依赖清单
 - 支持**导入 EMBA 报告**：客户自行安装运行 EMBA，006 读取其输出并接管 LLM 分析。
   这条路径完全不涉及分发，规避许可证问题
-- **自建 CycloneDX SBOM 输出**。SBOM 是一种格式而非难以复制的能力，006 已有组件
-  识别，缺的只是序列化。这块自建成本远低于承担 GPL 分发义务
+- ~~**自建 CycloneDX SBOM 输出**~~ —— **2026-08-15 更正：006 已经实现了。**
+  `src/ai_firmware_agent/sbom/cyclonedx.py`（226 行）产出 CycloneDX 1.5 JSON，
+  EPSS/KEV 以 properties 承载，含 VEX 风格 `vulnerabilities` 数组，并有四个专门的
+  测试文件（`test_cyclonedx_bom.py`、`test_sbom_components.py`、`test_sbom_vex.py`、
+  `test_cli_sbom_output.py`）。CLI 的 `--sbom` 选项已可用。
+
+  本条源于 2026-08-12 架构审查中"006 缺 SBOM 标准输出"的判断，该判断**是错的** ——
+  当时只扫了模块名没有看 CLI 导入。**不得据此派活**，那会重做已有能力。
+  这一条同时也削弱了"006 与 EMBA 差距不是数量级"的论据强度：差距比原判断**更小**，
+  因此第 3 条"不捆绑 EMBA"的结论不变，理由更充分。
 - 若将来商业形态确定为纯 SaaS 且法务确认可行，可重新评估捆绑
 
 ### 4. 法律复核是前置条件，不是事后补票

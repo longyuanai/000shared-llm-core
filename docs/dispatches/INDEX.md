@@ -53,6 +53,8 @@ Web 阶段文档为 `a778e0b`，并已写入精确 suite lock。剩余 nit 是�
 | [`011-INJECT-HARDEN.md`](011-INJECT-HARDEN.md) | 边界加固 + 六产品铺开边界与评估门禁（含 010 NIT-1）| ✅ PASS（[审计](../../AUDIT/011-INJECT-HARDEN.md)）|
 | [`012-STRUCT-DEBT.md`](012-STRUCT-DEBT.md) | 004 包树合并、套件版本策略、003 评估门禁、001 Elastic 接入 | 🟢 已解锁，ISSUE 4 待授权 |
 | [`013-REV-GHIDRA.md`](013-REV-GHIDRA.md) | 005 反编译接缝 + Ghidra headless 后端 + 后端溯源（[ADR-004](../adr/ADR-004-build-vs-wrap.md)）| ✅ PASS（[审计](../../AUDIT/013-REV-GHIDRA.md)）|
+| [`014-FW-INTEROP.md`](014-FW-INTEROP.md) | 006 导入 EMBA 报告 + 来源溯源 + 按来源隔离基线（ADR-004 006 轨）| 🟢 已解锁，未开工 |
+| [`015-OBSERVABILITY.md`](015-OBSERVABILITY.md) | 套件级 OpenTelemetry 追踪（可选依赖，默认关闭）| 🟢 已解锁，须等 012/014 收口 |
 
 历史 6-worker 并行包保留在 [`CODEX-DISPATCH-PACK-v0.6.md`](CODEX-DISPATCH-PACK-v0.6.md)，不再重复派发。
 
