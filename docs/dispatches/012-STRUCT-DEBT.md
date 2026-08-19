@@ -38,36 +38,39 @@
 
 提交顺序：
 
-1. `refactor(code): remove dead packages`
+1. ~~`refactor(code): remove dead packages`~~ —— **已撤销，见 §3 ISSUE 1**
 2. `refactor(code): consolidate package trees into ai_code_audit`
 3. `chore(version): adopt suite version policy`
 4. `test(eval): add lab eval gate and retire its exemption`（需授权）
 5. `feat(soc): add elasticsearch ingest source`
 
+> 撤销 commit 1 后，004 仓本阶段**只需要 commit 2 一个提交**。
+
 ## 3. ISSUE
 
-### ISSUE CODE-DEAD-001 · 清除 004 的死包（约 0.75h）
+### ~~ISSUE CODE-DEAD-001 · 清除 004 的死包~~ · ❌ 已撤销（2026-08-17）
 
-**已核实的事实**（不需要重新统计）：
+> **本 ISSUE 作废，不要执行。** 撤销依据见
+> [`AUDIT/012-STRUCT-DEBT.md`](../../AUDIT/012-STRUCT-DEBT.md) §2.1。
 
-| 包 | src 内引用 | tests 内引用 |
-|---|---|---|
-| `src/scanner/` | **0** | **0** |
-| `src/reporter/` | **0** | **0** |
-| `src/version.ts` | — | 一个 TypeScript 文件躺在 Python `src/` 里 |
+**撤销原因**：原表的"src 内引用 0 / tests 内引用 0"**只统计了 Python import**，
+据此把三项判为死包是错的。004 是 `pyproject.toml` 自述的
+"Hybrid TypeScript/Python upgrade layer"，这三项是它的 **TypeScript 半边**：
 
-**任务**：
+| 项 | 真实地位 |
+|---|---|
+| `src/scanner/` | 5 个 `.ts`（`orchestrator` / `baseline` / `diff` / `index` / `suppression`），**`tests/test_project_setup.py::test_upstream_stage1_sources_are_present_in_upgrade` 显式断言 `orchestrator.ts` 存在** |
+| `src/reporter/` | 5 个 `.ts`（`sarif` / `json` / `github` / `text` / `index`），SARIF 与 JSON 报告器的实现 |
+| `src/version.ts` | `--version`、JSON reporter、SARIF `tool.driver.version` 的单一版本源，有与 `package.json` 的漂移守卫测试；已进 `dist/index.js` 打包产物 |
 
-1. 逐个确认 `scanner` / `reporter` 确实无人引用 —— 包括动态导入
-   （`importlib`、`__import__`、entry points、字符串形式的模块名）。**确认之后再删**
-2. `version.ts`：查清它是否被前端构建消费。若无人使用则删除；若有用，移出 `src/`
-   到合适位置
-3. 若发现某个包其实还在用，**不要删，写进回报的 Open questions**
+构建链是真的：`package.json` 的 `bin.ai-codeguard → ./dist/index.js`，
+`build: tsup`、`test: vitest`、`lint: eslint src/`。
 
-**测试**：不新增测试。验收即"删除后全量不下降"。
+**删除后果**：004 Python 全量从 183 掉到 182（`test_project_setup.py` 直接红），
+并破坏 npm 包 `ai-codeguard` 的构建源。
 
-**验收**：004 全量 = 183 passed（`011` 审计基线），CLI smoke
-`ai-code-audit scan --input '<payload>' --json` 输出合法 envelope。
+**正确处置**：三项**原地保留，不删不移**。若未来要收拾这条 TS 线，须先写 ADR
+说明 004 的双语言边界，再单独派活 —— 不在本阶段。
 
 ---
 
@@ -94,7 +97,18 @@
    - 两步可以在同一个 commit 里，但**中间必须跑一次全量**
 3. 迁移期间**不要重写业务逻辑**。只移动、改 import、必要时改模块内相对引用。
    逻辑重构留给以后 —— 混进来会让"合并是否等价"无法验证
-4. 旧包路径**不留兼容 shim**。这是内部包，没有外部消费者；留 shim 等于合并没做完
+4. 旧包路径**不留兼容 shim** —— **但 `src/codeguard/cli.py` 除外（2026-08-17 修正）**。
+
+   > **修正依据**：原文"这是内部包，没有外部消费者"**不成立**。
+   > `000shared-integration/src/shared_integration/adapters/code.py:12` 硬编码
+   > `module = "codeguard.cli"`，是 Gateway 调 004 的唯一入口；该仓不在本派活 §2 的
+   > 可改范围内，且是 `suite-lock.yml` 锁定的已推送 M3 头 `2d42a87`。
+   >
+   > 因此：`src/codeguard/` 的**实质模块**（`taint` / `dataflow` / `explain` / `v05` /
+   > `rules`）迁入 `ai_code_audit`，**`src/codeguard/cli.py` 与最小 `__init__.py` 原地保留**，
+   > 作为显式的集成契约入口（它已在工作区内被正确重指向 `ai_code_audit.hybrid_cli`）。
+   > 把 adapter 的 `module` 改成 `ai_code_audit.cli` 需要动锁定仓 + 重新锁 suite +
+   > 跑一次 suite CI，属**另一个派活**，不在 012 范围。
 5. `analyzer` / `parser` / `cache` / `config` / `types` / `rules` 等其它顶层包
    **本次不动**，避免范围膨胀
 
@@ -103,7 +117,8 @@
 - 不新增功能测试
 - 已有测试的 import 路径随之更新
 - 新增 `tests/test_package_layout.py::test_no_legacy_package_trees`：断言
-  `src/ai_codeguard` 与 `src/codeguard` 不再存在
+  `src/ai_codeguard` 不再存在，且 `src/codeguard` 下**只剩** `cli.py` 与 `__init__.py`
+  （即实质模块已迁走、集成契约入口仍在）
 
 **验收**：
 
@@ -274,6 +289,6 @@ Open questions: <可选>
 
 停下来问，写进 `Open questions`，先做不受阻塞的 ISSUE。特别地：
 
-- 发现 `scanner` / `reporter` 其实仍被引用 → 不要删，报出来
+- ~~发现 `scanner` / `reporter` 其实仍被引用 → 不要删，报出来~~ —— 审计层已核实它们是 TS 源，ISSUE 1 整体撤销
 - 合并过程中发现两个包有**行为冲突**（同名不同义的函数）→ 停，不要自己选一个
 - core 改版本号后某个产品装不上 → 停，不要改产品的依赖声明绕过
