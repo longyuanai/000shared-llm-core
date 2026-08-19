@@ -60,9 +60,14 @@ def registry(self) -> RuleRegistry:
 
 **兼容性**：
 
-- `__init__` 的**签名未变**，`RuleEngine()` 与 `RuleEngine(非空 registry)` 行为逐字不变
+- `__init__` 的**可调用参数未变**，`RuleEngine()` 与 `RuleEngine(非空 registry)` 行为逐字不变
 - 唯一行为变化限于 `RuleEngine(空 registry)` 这一种调用
 - 全套件检索未发现任何一处依赖"传空表却期待拿到内置规则"的调用
+
+C1 同时包含派活已认可的 typing 现代化：字符串前向引用改为普通 postponed annotation，
+`typing.Mapping/Sequence` 改为 `collections.abc` 版本。它不改变调用方式或上述运行时语义，
+但原始 `__annotations__` / `inspect.signature()` 的字符串表示不是逐字兼容；依赖这种原始
+typing metadata 的调用方应改用 `typing.get_type_hints()`，本套件未发现此类消费方。
 
 **迁移**：调用方无需改动。若确有代码依赖旧的 fail-open 行为，显式改写为
 `RuleEngine(RuleRegistry.default())` 即可拿回原语义。
@@ -78,7 +83,7 @@ def registry(self) -> RuleRegistry:
 1. "core 的包版本等于它实现的最高契约版本" —— 当前是 v0.6 §15，故 `0.6.0`
 2. "core 的**对外签名**发生变化前……至少提升次版本号"
 
-本次**签名未变**，变的是同一契约版本内一个边界情形的行为，且是把未定义/易误用的行为
+本次**可调用参数未变**，变的是同一契约版本内一个边界情形的行为，且是把未定义/易误用的行为
 收敛到唯一合理解释。因此按规则 1 保持 `0.6.0`，不升次版本号 ——
 升版本会同时违反规则 1 并打掉 `tests/test_versioning.py` 里
 `__version__ == "0.6.0"` 的硬断言。
@@ -86,14 +91,15 @@ def registry(self) -> RuleRegistry:
 本 ADR 即规则 2 要求的"先写 ADR"。**未来任何真正改变 `__all__` 中符号签名的改动，
 仍必须升次版本号。**
 
-## 5. 待办（不阻塞本 ADR）
+## 5. 跨仓核验
 
-`003AI Agent安全靶场/src/ai_agent_lab/v05_compat.py:276` 存在同一模式的副本：
+`003AI Agent安全靶场/src/ai_agent_lab/v05_compat.py:276` 存在相同语法：
 
 ```python
 self.registry = registry or RuleRegistry.default()
 ```
 
-它是 003 自己的 v0.5 兼容层，带有相同的空表吞没问题。003 的 HEAD 被
-`suite-lock.yml` 锁在 `3862acf`，且该仓有决策层保护的未提交修改，
-**本 ADR 不修改它**。留待 003 下次获得授权动工时一并收敛。
+它是 003 自己的 v0.5 兼容层，但其 `RuleRegistry` 没有实现 `__len__` 或 `__bool__`，
+所以空实例仍为 truthy，当前写法会保留传入实例，**不复现 core 的空表吞没缺陷**。
+003 的 HEAD 被 `suite-lock.yml` 锁在 `3862acf`，且该仓有决策层保护的未提交修改；本 ADR
+不修改它，也不为这处仅语法相同的代码创建待办。

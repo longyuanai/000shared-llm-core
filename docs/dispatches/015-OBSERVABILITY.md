@@ -1,7 +1,7 @@
 # 015-OBSERVABILITY：套件级可观测性
 
-> **状态**：🟢 已解锁
-> **前置**：与 `012` / `014` 目标仓有重叠，**不要与它们并行执行**，等其收口后再开
+> **状态**：🟢 已解锁（018 已 PASS-WITH-NITS）
+> **前置**：012 / 014 / 018 均已收口；先做 §3 的 C0 纯文档收尾，再开 OTel 实现
 > **预计工作量**：5 个 ISSUE，约 8 小时
 
 ## 1. 目标
@@ -47,13 +47,33 @@ core 的 `pyproject.toml` 声明了 `structlog = "^24.2.0"`，但 `src/` 下**�
 - `010` / `011` / `013` 建立的评估、边界与后端机制
 - `003AI Agent安全靶场` 受保护文件
 
-提交顺序（1 阻塞 2/3/4）：
+提交顺序（跨仓按阶段推进；C0 是前置收尾，C1 阻塞 C2/C3/C4）：
 
-1. `feat(core): add optional otel tracing seam`
-2. `feat(core): trace llm calls alongside the audit log`
-3. `feat(integration): trace gateway request lifecycle`
-4. `feat(products): trace scan entrypoints`
-5. `chore(core): resolve the unused structlog dependency`
+0. core：`docs(audit): close CORE-RULEENGINE-001`
+1. core：`feat(core): add optional otel tracing seam`
+2. core：`feat(core): trace llm calls alongside the audit log`
+3. Integration：`feat(integration): trace gateway request lifecycle`
+4. 每个实际修改的产品仓各一个：`feat(product): trace scan entrypoint`
+5. core：`chore(core): resolve the unused structlog dependency`
+
+六个产品是独立 Git 仓，C4 **不是跨仓单一 commit**。001–006 每个实际落地的产品各自提交
+一个本地 commit；若 003 因受保护文件按 §4 要求跳过，则 003 无 C4 commit，并在回报中说明。
+
+### C0 · 018 审计层收尾（不属于五个 OTel ISSUE）
+
+开始实现前，先把审计层已写定的下列文件原样提交，避免混入 C1–C5：
+
+```
+AUDIT/018-CORE-RULEENGINE.md
+docs/adr/ADR-006-rule-engine-empty-registry.md
+docs/dispatches/012-REWORK.md
+docs/dispatches/015-OBSERVABILITY.md
+docs/dispatches/018-CORE-RULEENGINE.md
+docs/dispatches/INDEX.md
+```
+
+C0 只允许上述文档，不得改 src/tests。018 的测试环境隔离 NIT 记入 backlog，不在 C0
+顺手修；C0 完成后再按 C1–C5 开始本阶段五个 ISSUE。C4 依 §3 在各产品仓分别提交。
 
 ## 4. ISSUE
 
@@ -82,7 +102,7 @@ core 的 `pyproject.toml` 声明了 `structlog = "^24.2.0"`，但 `src/` 下**�
 - `tests/test_telemetry.py::test_enabled_by_environment_variable`
 - `tests/test_telemetry.py::test_span_records_exception_without_reraising_differently`
 
-**验收**：core 全量 ≥ 124 passed；**在未安装 OTel 的环境下全绿**（本机就是这种环境，
+**验收**：core 全量 ≥ 150 passed；**在未安装 OTel 的环境下全绿**（本机就是这种环境，
 这是实际验收条件）。
 
 ---
@@ -142,8 +162,8 @@ core 的 `pyproject.toml` 声明了 `structlog = "^24.2.0"`，但 `src/` 下**�
 **测试**（每产品 ≥ 1，共 ≥ 6）：
 - 各产品 `tests/test_tracing.py::test_scan_entrypoint_creates_span`
 
-**验收**：六个产品全量均无下降（基线：001=278、002=183、004=183、005=304、
-006=398；003 见下）。
+**验收**：六个产品全量均无下降（当前审计基线：001=285、002=183、003=383 passed +
+1 个既有失败、004=184、005=304、006=415 passed + 2 skipped）。
 
 **003 特别说明**：`003AI Agent安全靶场` 有受保护的未提交修改。**若埋点需要修改
 那 7 个文件中的任何一个，跳过 003 并在回报中说明**，不要为了覆盖率去碰它。
@@ -176,12 +196,15 @@ core 的 `pyproject.toml` 声明了 `structlog = "^24.2.0"`，但 `src/` 下**�
 - **PYTHONPATH 必须绝对路径**，表见 [`010-AI-TRUST.md`](010-AI-TRUST.md) §4.1
 - **本机未安装 OpenTelemetry，且本阶段不要求安装。** 全部验收在"未安装"路径上完成；
   真实导出验证写成手工步骤文档，同 `013` 对 Ghidra 的处理
-- 只提交到本地，不 push；5 个独立 commit
+- 只提交到本地，不 push；core 4 个 commit（C0/C1/C2/C5）、Integration 1 个（C3）、
+  每个实际修改的产品仓各 1 个（C4）。若 6 产品全落地则共 11 个；003 合规跳过则共 10 个
 
 ## 6. 回报格式
 
 同 `013`。额外要求：
 
+- 先报告 C0 hash 与 §3 C0 的精确文件清单；C0 不得含 src/tests
+- 分仓报告 C1/C2/C3/C4/C5 hash；C4 必须逐产品列出，跳过 003 时给出受保护文件依据
 - `CORE-OTEL-002` 贴 `test_span_never_contains_prompt_or_response` 的通过输出
 - `INTEG-OTEL-001` 贴"关闭追踪时响应不变"的验证输出
 - `CORE-DEP-001` 说明 structlog 是用起来了还是删掉了，以及理由

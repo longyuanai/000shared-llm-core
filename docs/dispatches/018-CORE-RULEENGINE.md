@@ -1,6 +1,6 @@
 # 018-CORE-RULEENGINE：落定 ADR-006 与 core 文档提交
 
-> **状态**：🟢 已解锁（决策层 2026-08-17 认可）
+> **状态**：✅ PASS-WITH-NITS（2026-08-19；见 [`AUDIT/018`](../../AUDIT/018-CORE-RULEENGINE.md)）
 > **依据**：[`ADR-006`](../adr/ADR-006-rule-engine-empty-registry.md)（已接受）
 > **目标仓**：`000shared-llm-core` —— **只有这一个**
 > **预计工作量**：约 20 分钟，**三个 commit**，不写新代码

@@ -104,7 +104,7 @@ tests/test_package_layout.py::test_no_legacy_package_trees
 
 | # | 项 | 标准 |
 |---|---|---|
-| 1 | 004 全量 | **= 183 passed**，不得下降 |
+| 1 | 004 全量 | **= 184 passed**（迁移前 183 基线 + 本派活规定的 1 个布局测试）|
 | 2 | `tests/test_project_setup.py` | 全绿（证明没误删 TS 源）|
 | 3 | `tests/test_package_layout.py` | 新测试通过 |
 | 4 | `011` 的 `test_eval_gate.py` + `test_prompt_injection.py` | **必须仍然通过**（合并没破坏行为的证据）|

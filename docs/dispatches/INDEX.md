@@ -57,12 +57,12 @@ Web 阶段文档为 `a778e0b`，并已写入精确 suite lock。剩余 nit 原�
 | [`010-AI-TRUST.md`](010-AI-TRUST.md) | LLM 输出评估门禁、不可信内容边界、`api-key-list` | ✅ PASS-WITH-NITS（[审计](../../AUDIT/010-AI-TRUST.md)）|
 | [`011-INJECT-HARDEN.md`](011-INJECT-HARDEN.md) | 边界加固 + 六产品铺开边界与评估门禁（含 010 NIT-1）| ✅ PASS（[审计](../../AUDIT/011-INJECT-HARDEN.md)）|
 | [`019-AUDIT-TOOLING.md`](019-AUDIT-TOOLING.md) | 修 `inspect_worker_return.py` / `run_all_tests.py` 的 PYTHONPATH 缺口（六仓假 FAIL，已误判 3 次）| ✅ **PASS**（[审计](../../AUDIT/019-AUDIT-TOOLING.md)）—— 干净环境 0/6 → 5/6，审计工具已可信 |
-| [`018-CORE-RULEENGINE.md`](018-CORE-RULEENGINE.md) | core `RuleEngine` 空 registry 语义 + 测试补充 + 文档提交（[ADR-006](../adr/ADR-006-rule-engine-empty-registry.md)）| 🟢 **已解锁，待执行** —— 3 个 commit，不写新代码 |
+| [`018-CORE-RULEENGINE.md`](018-CORE-RULEENGINE.md) | core `RuleEngine` 空 registry 语义 + 测试补充 + 文档提交（[ADR-006](../adr/ADR-006-rule-engine-empty-registry.md)）| ✅ **PASS-WITH-NITS**（[审计](../../AUDIT/018-CORE-RULEENGINE.md)）—— core `85d34bd`，150 passed，3 个 commit 边界全绿；2 组非阻塞 NIT |
 | [`012-REWORK.md`](012-REWORK.md) | **004 包树合并收口（返工，一个 commit）** | ✅ **PASS**（[最终审计](../../AUDIT/012-REWORK.md)）—— 004 `224c7ba`，184 passed，Worker D 与显式 rules smoke 全绿 |
 | [`012-STRUCT-DEBT.md`](012-STRUCT-DEBT.md) | 004 包树合并、套件版本策略、003 评估门禁、001 Elastic 接入 | ✅ **经 012-REWORK 收口**—— 原审计 FAIL 保留作历史；ISSUE 1 撤销、ISSUE 2 已返工 PASS、ISSUE 3/5 完成、ISSUE 4 继续挂起 |
 | [`013-REV-GHIDRA.md`](013-REV-GHIDRA.md) | 005 反编译接缝 + Ghidra headless 后端 + 后端溯源（[ADR-004](../adr/ADR-004-build-vs-wrap.md)）| ✅ PASS（[审计](../../AUDIT/013-REV-GHIDRA.md)）|
 | [`014-FW-INTEROP.md`](014-FW-INTEROP.md) | 006 导入 EMBA 报告 + 来源溯源 + 按来源隔离基线（ADR-004 006 轨）| ✅ **PASS-WITH-NITS**（[审计](../../AUDIT/014-FW-INTEROP.md)）—— 2 个 NIT 记入 backlog，不阻塞 |
-| [`015-OBSERVABILITY.md`](015-OBSERVABILITY.md) | 套件级 OpenTelemetry 追踪（可选依赖，默认关闭）| 🟢 **已解锁，排在 018 之后** —— 012/014 均已收口；与 018 同改 core，不得并行混线 |
+| [`015-OBSERVABILITY.md`](015-OBSERVABILITY.md) | 套件级 OpenTelemetry 追踪（可选依赖，默认关闭）| 🟢 **下一任务** —— 先提交 018 的 C0 纯文档收尾，再做 5 个 OTel ISSUE；C4 每个产品仓独立提交 |
 
 历史 6-worker 并行包保留在 [`CODEX-DISPATCH-PACK-v0.6.md`](CODEX-DISPATCH-PACK-v0.6.md)，不再重复派发。
 
