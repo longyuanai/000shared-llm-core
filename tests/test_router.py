@@ -81,6 +81,16 @@ def test_router_unknown_tier_raises() -> None:
         router.resolve(TaskTier.PREMIUM)
 
 
+def test_router_missing_provider_raises() -> None:
+    core = _core_with_two_providers()
+    router = LLMRouter(core, rules=[RouteRule(TaskTier.LOCAL, "missing", "m")], audit=None)
+    try:
+        with pytest.raises(KeyError, match="not configured"):
+            router.resolve(TaskTier.LOCAL)
+    finally:
+        router.close()
+
+
 def test_router_chat_records_audit(tmp_path: Path) -> None:
     audit_path = tmp_path / "audit.jsonl"
     core = CoreConfig(
@@ -177,6 +187,54 @@ def test_load_config_no_providers_raises(tmp_path: Path, monkeypatch: pytest.Mon
         load_config(empty_cfg)
 
 
+def test_load_config_missing_file_raises(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("LLM_PROVIDERS", raising=False)
+    with pytest.raises(FileNotFoundError, match="Config file not found"):
+        load_config(tmp_path / "missing.yml")
+
+
+def test_load_config_env_provider_and_audit_options(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("LLM_PROVIDERS", "broken,local")
+    monkeypatch.setenv("LLM_LOCAL_BASE_URL", "http://env")
+    monkeypatch.setenv("LLM_LOCAL_DEFAULT_MODEL", "m-env")
+    monkeypatch.setenv("LLM_LOCAL_ENABLED", "off")
+    monkeypatch.setenv("LLM_LOCAL_TIMEOUT_S", "2.5")
+    monkeypatch.setenv("LLM_LOCAL_MAX_RETRIES", "4")
+    monkeypatch.setenv("LLM_AUDIT_BACKEND", "noop")
+    monkeypatch.setenv("LLM_AUDIT_INCLUDE_PROMPT", "false")
+    monkeypatch.setenv("LLM_AUDIT_INCLUDE_RESPONSE", "true")
+
+    cfg = load_config()
+
+    assert set(cfg.providers) == {"local"}
+    provider = cfg.providers["local"]
+    assert provider.enabled is False
+    assert provider.timeout_s == 2.5
+    assert provider.max_retries == 4
+    assert cfg.audit.backend == "noop"
+    assert cfg.audit.include_prompt is False
+    assert cfg.audit.include_response is True
+
+
+def test_load_config_yaml_boolean_audit_options(tmp_path: Path) -> None:
+    cfg_file = tmp_path / "cfg.yml"
+    cfg_file.write_text(
+        "providers:\n"
+        "  - name: local\n"
+        "    base_url: http://yaml\n"
+        "    default_model: m-yaml\n"
+        "audit:\n"
+        "  backend: noop\n"
+        "  include_prompt: false\n"
+        "  include_response: true\n",
+        encoding="utf-8",
+    )
+
+    cfg = load_config(cfg_file)
+    assert cfg.audit.include_prompt is False
+    assert cfg.audit.include_response is True
+
+
 def test_load_config_yaml_overrides_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("LLM_PROVIDERS", "local")
     monkeypatch.setenv("LLM_LOCAL_BASE_URL", "http://env")
@@ -216,3 +274,34 @@ def test_default_rules_use_local_when_present() -> None:
     assert by_tier[TaskTier.CHEAP].provider == "local"
     assert by_tier[TaskTier.STANDARD].provider == "remote"
     assert by_tier[TaskTier.PREMIUM].provider == "remote"
+
+
+def test_default_rules_use_local_for_all_tiers_when_only_local_exists() -> None:
+    core = CoreConfig(
+        providers={
+            "local": ProviderConfig(
+                name="local", base_url="http://l", api_key="k", default_model="m-local"
+            )
+        },
+        audit=AuditConfig(backend="noop"),
+    )
+    from shared_llm_core.router import _default_rules
+
+    rules = _default_rules(core)
+    assert {rule.tier for rule in rules} == {TaskTier.CHEAP, TaskTier.STANDARD, TaskTier.PREMIUM}
+    assert all(rule.provider == "local" and rule.model == "m-local" for rule in rules)
+
+
+def test_router_from_env_builds_default_rules(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("LLM_PROVIDERS", "local")
+    monkeypatch.setenv("LLM_LOCAL_BASE_URL", "http://local")
+    monkeypatch.setenv("LLM_LOCAL_DEFAULT_MODEL", "m-local")
+    monkeypatch.setenv("LLM_AUDIT_BACKEND", "noop")
+
+    router = LLMRouter.from_env()
+    try:
+        client, model = router.resolve(TaskTier.STANDARD)
+        assert client.provider.name == "local"
+        assert model == "m-local"
+    finally:
+        router.close()

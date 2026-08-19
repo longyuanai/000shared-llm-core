@@ -8,7 +8,11 @@ content-type.
 from __future__ import annotations
 
 import asyncio
-from typing import Any, AsyncIterator
+import sys
+from collections.abc import AsyncIterator
+from datetime import UTC, datetime, timedelta
+from types import SimpleNamespace
+from typing import Any
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -158,6 +162,37 @@ async def test_finding_registry_query_by_host():
 
 
 @pytest.mark.asyncio
+async def test_finding_registry_query_by_cve_since_and_limit():
+    reg = FindingRegistry()
+    old = Finding(
+        id="old",
+        source=FindingSource.VULN,
+        severity=FindingSeverity.HIGH,
+        confidence=0.8,
+        title="old",
+        host="h",
+        cve="CVE-OLD",
+        ts=datetime.now(UTC) - timedelta(days=1),
+    )
+    new = Finding(
+        id="new",
+        source=FindingSource.VULN,
+        severity=FindingSeverity.HIGH,
+        confidence=0.8,
+        title="new",
+        host="h",
+        cve="CVE-NEW",
+        ts=datetime.now(UTC),
+    )
+    await reg.add(old)
+    await reg.add(new)
+
+    assert reg.query(cve="CVE-OLD") == [old]
+    assert reg.query(since=datetime.now(UTC) - timedelta(hours=1)) == [new]
+    assert reg.query(limit=1) == [new]
+
+
+@pytest.mark.asyncio
 async def test_finding_registry_max_size_eviction():
     reg = FindingRegistry(max_size=3)
     for i in range(5):
@@ -228,13 +263,76 @@ async def test_gateway_scan_unknown_source_404(client):
 
 
 @pytest.mark.asyncio
+async def test_gateway_scan_unregistered_source_404(client):
+    r = await client.post("/v0.5/001/scan", json={})
+    assert r.status_code == 404
+    assert "not registered" in r.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_gateway_registry_property_and_stream_events():
+    registry = FindingRegistry()
+    gateway = IntegrationGateway(products={}, registry=registry)
+    assert gateway.registry is registry
+
+    stream_route = next(route for route in gateway.app.routes if route.path == "/v0.5/stream")
+    response = await stream_route.endpoint()
+    iterator = response.body_iterator
+
+    finding_task = asyncio.create_task(anext(iterator))
+    await asyncio.sleep(0)
+    finding = Finding(
+        id="stream-finding",
+        source=FindingSource.SOC,
+        severity=FindingSeverity.MEDIUM,
+        confidence=0.5,
+        title="stream",
+    )
+    await registry.add(finding)
+    finding_chunk = await finding_task
+    if isinstance(finding_chunk, bytes):
+        finding_chunk = finding_chunk.decode()
+    assert "event: finding" in finding_chunk
+    assert '"id": "stream-finding"' in finding_chunk
+
+    correlation_task = asyncio.create_task(anext(iterator))
+    await asyncio.sleep(0)
+    await registry.add_correlation(
+        Correlation(
+            rule_id="stream-rule",
+            findings=("stream-finding",),
+            severity=FindingSeverity.HIGH,
+            narrative="streamed",
+        )
+    )
+    correlation_chunk = await correlation_task
+    if isinstance(correlation_chunk, bytes):
+        correlation_chunk = correlation_chunk.decode()
+    assert "event: correlation" in correlation_chunk
+    assert '"rule_id": "stream-rule"' in correlation_chunk
+    await iterator.aclose()
+
+
+def test_gateway_run_delegates_to_uvicorn(monkeypatch):
+    calls: dict[str, Any] = {}
+
+    def fake_run(app, *, host, port):
+        calls.update(app=app, host=host, port=port)
+
+    monkeypatch.setitem(sys.modules, "uvicorn", SimpleNamespace(run=fake_run))
+    gateway = IntegrationGateway(products={})
+    gateway.run(host="127.0.0.1", port=9090)
+
+    assert calls["app"].title == "shared-llm-core IntegrationGateway"
+    assert calls["host"] == "127.0.0.1"
+    assert calls["port"] == 9090
+
+
+@pytest.mark.asyncio
 async def test_gateway_stream_sse_format(client):
     # Verify the endpoint exists and returns the right media type
     # by inspecting the route metadata + directly calling the
     # underlying event generator with no subscribers.
-    from shared_llm_core.gateway import FindingRegistry
-    import json
-
     reg = FindingRegistry()
     # Drive the generator manually so we don't open a real SSE socket
     gen = reg.subscribe()

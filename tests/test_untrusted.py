@@ -86,6 +86,15 @@ def test_invalid_kind_is_rejected() -> None:
         wrap_untrusted("synthetic evidence", kind='log_event\"><ESCAPE>')
 
 
+def test_invalid_scrub_and_truncation_inputs_are_rejected() -> None:
+    with pytest.raises(TypeError, match="content must be a string"):
+        scrub_control_sequences(123)  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="content must be a string"):
+        truncate_evidence(None, max_chars=1)  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="non-negative integer"):
+        truncate_evidence("evidence", max_chars=True)
+
+
 def test_double_wrap_nests_and_escapes_inner() -> None:
     once = wrap_untrusted("synthetic evidence", kind="log_event")
     twice = wrap_untrusted(once, kind="outer")

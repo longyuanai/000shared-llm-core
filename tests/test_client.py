@@ -10,7 +10,6 @@ import json
 from typing import Any
 
 import httpx
-import pytest
 
 from shared_llm_core.client import ChatMessage, ChatRequest, LLMClient
 from shared_llm_core.config import ProviderConfig
@@ -137,6 +136,32 @@ def test_chat_passes_tools_and_response_format() -> None:
 
     assert captured["body"]["response_format"] == {"type": "json_object"}
     assert captured["body"]["tools"] == [{"type": "function", "function": {"name": "noop"}}]
+
+
+def test_chat_passes_tool_choice_stop_and_extra_options() -> None:
+    captured: dict[str, Any] = {}
+
+    def handler(req: httpx.Request) -> httpx.Response:
+        captured["body"] = json.loads(req.content.decode("utf-8"))
+        return httpx.Response(200, json=_ok_response())
+
+    client, _ = _client(handler)
+    with client:
+        client.chat(
+            ChatRequest(
+                messages=[ChatMessage(role="user", content="use the tool")],
+                tool_choice={"type": "function", "function": {"name": "noop"}},
+                stop=["DONE"],
+                extra={"seed": 7},
+            )
+        )
+
+    assert captured["body"]["tool_choice"] == {
+        "type": "function",
+        "function": {"name": "noop"},
+    }
+    assert captured["body"]["stop"] == ["DONE"]
+    assert captured["body"]["seed"] == 7
 
 
 def test_stream_yields_deltas() -> None:

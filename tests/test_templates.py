@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from jinja2 import UndefinedError
 
 from shared_llm_core.templates import PromptTemplate, TemplateRegistry
 
@@ -54,16 +55,27 @@ def test_missing_template_raises(prompts_root: Path) -> None:
         reg.get("nope", "v1")
 
 
+def test_missing_template_directory_raises_when_latest_is_requested(tmp_path: Path) -> None:
+    with pytest.raises(FileNotFoundError, match="Template directory not found"):
+        TemplateRegistry(tmp_path).get("nope")
+
+
 def test_missing_version_raises(prompts_root: Path) -> None:
     reg = TemplateRegistry(prompts_root)
     with pytest.raises(FileNotFoundError):
         reg.get("greet", "v9")
 
 
+def test_empty_template_directory_raises(tmp_path: Path) -> None:
+    (tmp_path / "empty").mkdir()
+    with pytest.raises(FileNotFoundError, match="No versions found"):
+        TemplateRegistry(tmp_path).get("empty")
+
+
 def test_strict_jinja_raises_on_undefined_var(prompts_root: Path) -> None:
     reg = TemplateRegistry(prompts_root)
     tpl = reg.get("report", "v1")
-    with pytest.raises(Exception):
+    with pytest.raises(UndefinedError):
         tpl.render()  # body missing
 
 

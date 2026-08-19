@@ -5,8 +5,9 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from pydantic import BaseModel
 
-from shared_llm_core.evaluation import EvalCase, run_eval
+from shared_llm_core.evaluation import EvalCase, _check_output, _coerce_output, run_eval
 
 
 def _case(*, severity: str = "high") -> EvalCase:
@@ -107,3 +108,88 @@ def test_live_mode_uses_router(monkeypatch: pytest.MonkeyPatch) -> None:
 
     assert result.passed
     assert seen == [_case().inputs]
+
+
+def test_eval_rejects_unknown_mode_and_missing_live_callback(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("SHARED_LLM_EVAL_MODE", "staging")
+    with pytest.raises(ValueError, match="must be 'replay' or 'live'"):
+        run_eval([])
+
+    monkeypatch.setenv("SHARED_LLM_EVAL_MODE", "live")
+    with pytest.raises(ValueError, match="requires an invoke callback"):
+        run_eval([])
+
+
+def test_eval_coerces_json_strings_models_and_chat_envelopes() -> None:
+    class Output(BaseModel):
+        severity: str
+
+    assert _coerce_output(Output(severity="high")) == {"severity": "high"}
+    assert _coerce_output('{"severity": "high"}') == {"severity": "high"}
+    assert _coerce_output(
+        {
+            "choices": [
+                {"message": {"content": '{"severity": "high"}'}}
+            ]
+        }
+    ) == {"severity": "high"}
+    assert _coerce_output({"choices": []}) == {"choices": []}
+
+    with pytest.raises(TypeError, match="assistant content"):
+        _coerce_output({"choices": [{"message": {"content": "[]"}}]})
+    with pytest.raises(TypeError, match="JSON object"):
+        _coerce_output(["not", "an", "object"])
+
+
+def test_eval_reports_fixture_and_case_id_errors(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("SHARED_LLM_EVAL_FIXTURES", str(tmp_path))
+    result = run_eval([EvalCase(id="../escape", inputs={}, expected={})])[0]
+    assert not result.passed
+    assert "filename-safe" in result.deviations[0]
+
+    missing = run_eval([EvalCase(id="missing", inputs={}, expected={})])[0]
+    assert not missing.passed
+    assert "evaluation failed" in missing.deviations[0]
+
+
+def test_eval_reports_malformed_expectation_rules() -> None:
+    deviations = _check_output(
+        {"severity": "high", "confidence": 0.5},
+        {
+            "required_fields": "severity",
+            "severity": "high",
+            "confidence": "0..1",
+        },
+    )
+    assert "required_fields" in deviations[0]
+    assert "expected.severity must be an object" in deviations
+    assert "expected.confidence must be an object" in deviations
+
+
+def test_eval_reports_severity_rule_edge_cases() -> None:
+    assert "field must be a field name" in _check_output(
+        {"severity": "high"}, {"severity": {"field": 1}}
+    )[0]
+    assert _check_output({}, {"severity": {"baseline": "high"}}) == []
+    assert "allowed must be a list of strings" in _check_output(
+        {"severity": "high"}, {"severity": {"allowed": ["high", 1]}}
+    )[0]
+    assert "not in allowed set" in _check_output(
+        {"severity": "critical"}, {"severity": {"allowed": ["high"]}}
+    )[0]
+    assert any(
+        "canonical" in item
+        for item in _check_output(
+            {"severity": "urgent"}, {"severity": {"baseline": "unknown"}}
+        )
+    )
+    assert "max_drift" in _check_output(
+        {"severity": "high"}, {"severity": {"baseline": "high", "max_drift": True}}
+    )[0]
+
+
+def test_eval_reports_confidence_rule_edge_cases() -> None:
+    assert "field must be a field name" in _check_output(
+        {"confidence": 0.5}, {"confidence": {"field": None}}
+    )[0]
+    assert _check_output({}, {"confidence": {"min": 0, "max": 1}}) == []
