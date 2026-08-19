@@ -43,6 +43,15 @@ _NOOP_SPAN = _NoOpSpan()
 _NOOP_TRACER = _NoOpTracer()
 
 
+class _SafeSpan:
+    def __init__(self, delegate: Any) -> None:
+        self._delegate = delegate
+
+    def set_attribute(self, key: str, value: object) -> None:
+        with suppress(Exception):
+            self._delegate.set_attribute(key, value)
+
+
 def _enabled() -> bool:
     return os.getenv(_ENABLED_ENV, "").strip().lower() in _TRUE_VALUES
 
@@ -93,12 +102,12 @@ def span(
         manager = _NoOpSpanManager()
         active_span = manager.__enter__()
 
+    safe_span = _SafeSpan(active_span)
     for key, value in (attributes or {}).items():
-        with suppress(Exception):
-            active_span.set_attribute(key, value)
+        safe_span.set_attribute(key, value)
 
     try:
-        yield active_span
+        yield safe_span
     except BaseException as error:
         with suppress(Exception):
             active_span.record_exception(error)

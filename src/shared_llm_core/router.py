@@ -18,6 +18,7 @@ from enum import Enum
 from shared_llm_core.audit import AuditLog
 from shared_llm_core.client import ChatRequest, ChatResponse, LLMClient
 from shared_llm_core.config import CoreConfig
+from shared_llm_core.telemetry import span
 
 
 class TaskTier(str, Enum):
@@ -91,14 +92,36 @@ class LLMRouter:
         client, model = self.resolve(tier)
         if req.model is None:
             req = req.model_copy(update={"model": model})
-        t0 = time.perf_counter()
-        resp = client.chat(req)
-        latency_ms = int((time.perf_counter() - t0) * 1000)
-        if self.audit is not None:
-            self.audit.record(
-                request=req, response=resp, provider=client.provider.name, latency_ms=latency_ms
-            )
-        return resp
+        with span(
+            "llm.call",
+            attributes={
+                "llm.model": req.model or model,
+                "llm.provider": client.provider.name,
+                "llm.task_tier": tier.value,
+            },
+        ) as call_span:
+            t0 = time.perf_counter()
+            try:
+                resp = client.chat(req)
+                latency_ms = int((time.perf_counter() - t0) * 1000)
+                call_span.set_attribute("llm.prompt_tokens", resp.usage.prompt_tokens)
+                call_span.set_attribute("llm.completion_tokens", resp.usage.completion_tokens)
+                call_span.set_attribute("llm.total_tokens", resp.usage.total_tokens)
+                if self.audit is not None:
+                    self.audit.record(
+                        request=req,
+                        response=resp,
+                        provider=client.provider.name,
+                        latency_ms=latency_ms,
+                    )
+            except BaseException:
+                latency_ms = int((time.perf_counter() - t0) * 1000)
+                call_span.set_attribute("llm.latency_ms", latency_ms)
+                call_span.set_attribute("llm.success", False)
+                raise
+            call_span.set_attribute("llm.latency_ms", latency_ms)
+            call_span.set_attribute("llm.success", True)
+            return resp
 
 
 def _default_rules(cfg: CoreConfig) -> list[RouteRule]:
