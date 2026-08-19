@@ -13,7 +13,6 @@ httpx = "^0.27.0"
 pydantic = "^2.7.0"
 pyyaml = "^6.0.1"
 tenacity = "^8.3.0"
-structlog = "^24.2.0"
 python-dotenv = "^1.0.1"
 # 0.115.x constrains Starlette below the releases that fix the 2026
 # multipart/range advisories. Keep the minor line explicit so dependency
