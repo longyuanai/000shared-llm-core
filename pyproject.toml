@@ -26,6 +26,16 @@ uvicorn = ">=0.51,<1.0"
 # Used directly by src/shared_llm_core/templates.py; previously undeclared and
 # resolved only as a transitive dependency of fastapi.
 jinja2 = "^3.1.4"
+opentelemetry-api = { version = "^1.36.0", optional = true }
+opentelemetry-sdk = { version = "^1.36.0", optional = true }
+opentelemetry-exporter-otlp-proto-http = { version = "^1.36.0", optional = true }
+
+[tool.poetry.extras]
+otel = [
+    "opentelemetry-api",
+    "opentelemetry-sdk",
+    "opentelemetry-exporter-otlp-proto-http",
+]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.0"
