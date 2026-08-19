@@ -19,9 +19,10 @@ from __future__ import annotations
 
 import sys
 from abc import ABC, abstractmethod
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Literal, Mapping, Sequence
+from typing import Any, Literal
 
 from shared_llm_core.finding import Finding
 
@@ -37,7 +38,7 @@ class Rule(ABC):
     severity_hint: Literal["low", "medium", "high", "critical"] = "medium"
 
     @abstractmethod
-    def evaluate(self, ctx: "RuleContext") -> list[Finding]:
+    def evaluate(self, ctx: RuleContext) -> list[Finding]:
         """Run the rule. MUST be pure: do not mutate ctx."""
 
     def __repr__(self) -> str:
@@ -92,7 +93,7 @@ class RuleRegistry:
         return len(self._rules)
 
     @classmethod
-    def default(cls) -> "RuleRegistry":
+    def default(cls) -> RuleRegistry:
         """Registry pre-loaded with shared_llm_core built-in rules."""
         from shared_llm_core.rules.builtin import BruteForceRule, KnownCVERule
 
@@ -106,7 +107,7 @@ class RuleEngine:
     """Run rules against a RuleContext, collect Findings."""
 
     def __init__(self, registry: RuleRegistry | None = None) -> None:
-        self._registry = registry or RuleRegistry.default()
+        self._registry = registry if registry is not None else RuleRegistry.default()
 
     @property
     def registry(self) -> RuleRegistry:

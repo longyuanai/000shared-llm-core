@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pytest
 
-from shared_llm_core.finding import Finding, FindingSeverity, FindingSource
+from shared_llm_core.finding import FindingSeverity
 from shared_llm_core.rule_engine import (
     Rule,
     RuleContext,
@@ -30,6 +30,35 @@ def test_rule_registry_register_and_get():
     rule = BruteForceRule()
     reg.register(rule)
     assert reg.get("core-brute-force") is rule
+
+
+def test_rule_repr_and_registry_lifecycle():
+    reg = RuleRegistry()
+    rule = BruteForceRule()
+    assert repr(rule) == "Rule(core-brute-force)"
+    reg.register(rule)
+    assert reg.all() == [rule]
+    assert "core-brute-force" in reg
+    assert len(reg) == 1
+    reg.unregister(rule.id)
+    assert rule.id not in reg
+    assert len(reg) == 0
+
+
+def test_rule_registry_rejects_empty_id():
+    class EmptyRule(Rule):
+        id = ""
+
+        def evaluate(self, ctx):
+            return []
+
+    with pytest.raises(ValueError, match="non-empty"):
+        RuleRegistry().register(EmptyRule())
+
+
+def test_rule_engine_registry_property():
+    registry = RuleRegistry()
+    assert RuleEngine(registry).registry is registry
 
 
 def test_rule_registry_duplicate_raises():
