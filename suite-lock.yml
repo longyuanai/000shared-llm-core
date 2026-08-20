@@ -15,49 +15,49 @@
     {
       "key": "integration",
       "repository": "longyuanai/-000shared-integration",
-      "commit": "2d42a8728b55a8a541d0f6d4ed23698fae23f15d",
+      "commit": "e59a077c69cc03547cbd741f58c1262294225290",
       "path": "000shared-integration",
       "install_path": "."
     },
     {
       "key": "soc",
       "repository": "longyuanai/-001AI-SOC-Agent",
-      "commit": "accfdfd281ab6641a1b54389519e63c37d471233",
+      "commit": "aacaba1f3e11485fa672b63b474bd0960f211b25",
       "path": "001AI-SOC-Agent",
       "install_path": "."
     },
     {
       "key": "vulnerability",
       "repository": "longyuanai/002AI-Vulnerability-Agent",
-      "commit": "b3ce7e9fa457f3ca9ebfeaaf70691059c8b19b3e",
+      "commit": "00f6199ba8e5f4d58125991457e494b189ca6efa",
       "path": "002AI-Vulnerability-Agent",
       "install_path": "."
     },
     {
       "key": "lab",
       "repository": "longyuanai/003AI-Agent-Security-Lab",
-      "commit": "fa71e06e02c9c300c34d1ec49de1a1fad1ca8597",
+      "commit": "b16f7d7304ec32efbe002030682ef3d16b07f016",
       "path": "003AI Agent安全靶场",
       "install_path": "."
     },
     {
       "key": "code",
       "repository": "longyuanai/004AI-Code-Audit",
-      "commit": "e500dab917ee0fe9b4c1dbbb725ba7a86c7d82b2",
+      "commit": "2c3466119c0a1deec7d7033ec819961570d7c9d0",
       "path": "004AI-Code-Audit",
       "install_path": "."
     },
     {
       "key": "reverse",
       "repository": "longyuanai/005AI-Reverse-Agent",
-      "commit": "72a474c6977ebe28203cb6b3ebb221ab3fa4607f",
+      "commit": "1f84a1a3be27e4d2fa0b39890318785eaf601273",
       "path": "005AI-Reverse-Agent",
       "install_path": "."
     },
     {
       "key": "firmware",
       "repository": "longyuanai/006AI-Firmware-Security-Agent",
-      "commit": "25e6ca6f94df4ae863c696665a7cda9d7b0c0dc2",
+      "commit": "f4049a3fd05b0a6a145ba884c54928efed64842d",
       "path": "006AI-Firmware-Security-Agent",
       "install_path": "."
     },
